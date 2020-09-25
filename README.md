@@ -1,6 +1,36 @@
 Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
 
+Плата, наследующая настройки для stm32vl, создается из шаблона arm/stm32f103-base
+
+Настройки для visual studio code:
+
+"configurations": [
+        {
+            "name": "Embox Debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "./build/base/bin/embox",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "interface": "swd",
+            "device": "stm32f1x",
+            "svdFile": "/home/artem/workspace/STM32F1_svd_V1.2/STM32F103.svd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "preRestartCommands": [
+                "load embox",
+                "enable breakpoint",
+                "monitor reset init"
+            ]
+        }
+    ]
+
+
+Стандартная информация из основной ветки embox: https://github.com/embox/embox
+
 Embox is a configurable RTOS designed for resource constrained and embedded systems. Embox main idea is using Linux software without Linux.
 
 Achievements
