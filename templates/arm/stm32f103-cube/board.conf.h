@@ -1,4 +1,4 @@
-#include <stm32f103_base.conf.h>
+#include <stm32f103_cube.conf.h>
 
 CONFIG {
 	uarts[1].status = DISABLED;
