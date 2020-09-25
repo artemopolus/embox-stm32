@@ -1,0 +1,8 @@
+package embox.driver.clock
+
+module dm816x_timer extends embox.arch.clock {
+	source "dm816x_timer.c"
+
+	depends embox.kernel.irq
+	@NoRuntime depends embox.kernel.time.clock_source
+}

@@ -1,0 +1,56 @@
+package embox.kernel.task
+
+@DefaultImpl(single)
+abstract module api {
+}
+
+@DefaultImpl(task_no_table)
+abstract module task_table_api {
+}
+
+module kernel_task {
+	source "kernel_task.c"
+
+	@NoRuntime depends embox.kernel.task.api
+	depends embox.kernel.task.task_resource // FIXME
+	depends embox.kernel.task.task_table_api
+}
+
+module single extends api {
+	source "single.c"
+	source "single.h"
+
+	depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
+}
+
+module task_no_table extends task_table_api {
+	source "task_no_table.h"
+
+	@NoRuntime depends embox.kernel.task.kernel_task
+	@NoRuntime depends embox.compat.libc.assert
+}
+
+module task_resource {
+	source "task_resource.c", "task_resource.lds.S"
+
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.util.Array
+
+/* FIXME atexit contains option atexit_max which used in limits.h
+ * #include <config/embox/kernel/task/resource/atexit.h>
+ * #define ATEXIT_MAX \
+ *   OPTION_MODULE_GET(embox__kernel__task__resource__atexit, NUMBER, atexit_max)
+ */
+	@NoRuntime depends embox.kernel.task.resource.atexit
+}
+
+module task_table extends task_table_api {
+	option number task_table_size=32
+	source "task_table.c"
+
+	@NoRuntime depends embox.compat.libc.assert
+}
+

@@ -1,0 +1,46 @@
+package third_party.bsp.dialog.da14695.cmd
+
+@AutoCmd
+@Cmd(name = "ble_example_sdk",
+	help = "BLE advertising - device appears in BLE scanner on your phone",
+	man = '''
+	''')
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+module ble_example_sdk {
+	@Cflags("-Wno-undef")
+	source "ble_example_sdk.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+	@NoRuntime depends third_party.bsp.dialog.da14695.ble_arch_main_sdk
+}
+
+@AutoCmd
+@Cmd(name = "ble_example_direct",
+	help = "BLE advertising - device appears in BLE scanner on your phone",
+	man = '''
+	''')
+@BuildDepends(ble_adapter_direct)
+module ble_example_direct {
+	option number log_level = 1
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695")
+	source "ble_example_direct.c"
+
+	@NoRuntime depends ble_adapter_direct
+}
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+module ble_adapter_direct extends third_party.bsp.dialog.da14695.ble_arch_main_api {
+	option number log_level = 4
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/cmd/ble_adapter_direct/ble_example_direct-v1")
+	source "arch_main.c",
+		"ble_adapter.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}

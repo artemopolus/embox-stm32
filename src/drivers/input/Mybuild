@@ -1,0 +1,20 @@
+package embox.driver.input
+
+module core {
+	option number hnd_priority = 200
+	option number event_queue_len = 16
+
+	source "input_dev.c"
+
+	@IncludeExport(path="drivers/input")
+	source "input_dev.h"
+	@IncludeExport(path="drivers/input")
+	source "keymap.h"
+
+	@IncludeExport(path="drivers/input")
+	source "input_codes.h"
+
+	depends embox.kernel.irq_api
+	depends embox.util.dlist
+	depends embox.kernel.lthread.lthread
+}

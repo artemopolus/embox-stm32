@@ -1,0 +1,10 @@
+package stm32f4_multibot.cmd
+
+@AutoCmd
+@Cmd(name="i2c_connect_boards", help="I2C")
+@BuildDepends(third_party.bsp.st_bsp_api)
+module i2c_connect_boards {
+	source "i2c_connect_boards.c"
+
+	depends third_party.bsp.st_bsp_api
+}

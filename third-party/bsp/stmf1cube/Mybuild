@@ -1,0 +1,27 @@
+package third_party.bsp.stmf1cube
+
+
+abstract module core extends third_party.bsp.st_bsp_api{
+}
+
+abstract module system_init {
+}
+
+abstract module stm32f1_bsp {
+}
+
+abstract module stm32f103cb_bsp {
+}
+
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module arch extends embox.arch.arch {
+	source "arch.c"
+
+	depends third_party.bsp.stmf1cube.cube
+}
+
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module cmsis extends embox.arch.arm.cmsis {
+	source "cmsis_impl.h"
+	depends third_party.bsp.stmf1cube.cube
+}

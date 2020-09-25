@@ -1,0 +1,25 @@
+package embox.driver.virtual
+
+module null {
+	source "null.c"
+
+	depends embox.fs.driver.devfs
+	depends embox.driver.char_dev
+}
+
+module zero {
+	source "zero.c"
+
+	depends embox.compat.libc.all
+	depends embox.fs.driver.devfs
+	depends embox.driver.char_dev
+}
+
+module mem {
+	source "mem.c"
+
+	depends embox.compat.libc.all
+	depends embox.fs.driver.devfs
+	depends embox.driver.char_dev
+	depends embox.fs.syslib.idesc_mmap
+}

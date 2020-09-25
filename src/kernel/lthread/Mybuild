@@ -1,0 +1,15 @@
+package embox.kernel.lthread
+
+module lthread {
+	@IncludeExport(path="kernel/lthread")
+	source "lthread.h", "lthread_sched_wait.h", "waitq.h"
+
+	source "lthread.c"
+	source "lthread_sched_wait.c"
+
+	depends embox.kernel.sched.sched
+	depends embox.kernel.sched.current.api
+
+	@NoRuntime depends embox.kernel.timer.sys_timer
+	@NoRuntime depends embox.compat.posix.util.time
+}

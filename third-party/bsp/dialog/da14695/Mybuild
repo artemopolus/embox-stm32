@@ -1,0 +1,247 @@
+package third_party.bsp.dialog.da14695
+
+@BuildArtifactPath(cppflags="-include$(INCUDE_INSTALL_DIR)/config/custom_config_qspi.h")
+module custom_config {
+	@IncludeExport(path="config")
+	source "custom_config_qspi.h"
+
+	source "sdk_retention.lds.S"
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module sys_man {
+	@Cflags("-Wno-undef")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man")
+	source "sys_trng.c",
+			"sys_timer.c",
+			"sys_tcs_da1469x.c",
+			"sys_clock_mgr_da1469x.c",
+			"sys_watchdog.c",
+			"sys_bsr.c",
+			"sys_usb_da1469x.c",
+			"sys_power_mgr_da1469x.c"
+
+	@Cflags("-Wno-undef")
+
+	source "embox_sys_timer.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.periphirals
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module periphirals {
+	@Cflags("-Wno-undef")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/peripherals/src")
+	source "hw_trng.c", 
+			"hw_usb_da1469x.c",
+			"hw_cpm_da1469x.c",
+			"hw_watchdog.c",
+			"hw_sys_da1469x.c",
+			"hw_wkup_da1469x.c",
+			"hw_gpio.c",
+			"hw_i2c.c",
+			"hw_spi.c",
+			"hw_clk_da1469x.c",
+			"hw_gpadc.c",
+			"hw_pdc.c",
+			"hw_dma.c",
+			"hw_timer.c",
+			"hw_qspi.c",
+			"hw_bod_da1469x.c",
+			"hw_memctrl.c",
+			"hw_pmu_da1469x.c",
+			"hw_otpc_da1469x.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module memory {
+	@Cflags("-Wno-undef")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/memory/src")
+	source "qspi_automode.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+abstract module usb_dev_api { }
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module usb_dev_direct extends usb_dev_api {
+	option number log_level = 1
+	option number usb_irq = 15
+	option number vbus_irq = 21
+
+	@IncludeExport(path="third_party/dialog/da14695")
+	source "usb_da1469x.h"
+
+	@Cflags("-Wno-undef")
+
+	source "usb_da1469x.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module usb_dev_sdk extends usb_dev_api {
+	option number log_level = 1
+	option number usb_irq = 15
+	option number vbus_irq = 21
+
+	@IncludeExport(path="third_party/dialog/da14695")
+	source "usb_da1469x.h"
+
+	@Cflags("-Wno-undef")
+
+	source "usb_sdk_da1469x.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module system_init {
+	@Cflags("-Wno-undef")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/startup/DA1469x")
+	source "system_da1469x.c", 
+			"init_da1469x.c"
+
+	@Cflags("-Wno-undef")
+		
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/startup/DA1469x/GCC")
+	source "deepsleep.S"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.system_init)
+static module arch_init extends embox.arch.arch {
+	option number pll_lock_irq    = 33
+	option number xtal32m_rdy_irq = 26
+
+	/* Flash size in Kb */
+	option number flash_size=1024
+
+	@Cflags("-Wno-undef")
+
+	source "arch.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.system_init
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module libble_stack {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/binaries/DA1469x-Release")
+	source "libble_stack_da1469x.a"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@DefaultImpl(ble_arch_main_stub)
+abstract module ble_arch_main_api { }
+
+static module ble_arch_main_stub extends ble_arch_main_api {
+	source "ble_arch_main_stub.c"
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module ble_arch_main_sdk extends ble_arch_main_api {
+	option number cmac2sys_irq = 4
+
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-variable")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp_include)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/stack/da14690/src")
+	source "arch_main.c"
+
+	@Cflags("-Wno-undef")
+	source "cmac_irq_handler.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module pmu_adapter {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-incompatible-pointer-types")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp_include)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/middleware/adapters/src")
+	source "ad_pmu.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module ble_adapter {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-value")
+	@Cflags("-Wno-uninitialized")
+	@Cflags("-Wno-unused-function")
+	@Cflags("-Wno-discarded-qualifiers")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/adapter/src")
+	source "ad_ble.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module ble_api {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-value")
+	@Cflags("-Wno-uninitialized")
+	@Cflags("-Wno-unused-function")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/api/src")
+	source "ble_common.c",
+		   "ble_storage.c",
+		   "ble_uuid.c",
+		   "ble_gap.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module ble_manager {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-value")
+	@Cflags("-Wno-unused-variable")
+	@Cflags("-Wno-unused-but-set-variable")
+	@Cflags("-Wno-uninitialized")
+	@Cflags("-Wno-unused-function")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/clients/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/services/include)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src")
+	source "ble_mgr_helper.c",
+		   "ble_mgr_common.c",
+		   "ble_mgr.c",
+		   "ble_mgr_cmd.c",
+		   "ble_mgr_ad_msg.c",
+		   "ble_mgr_gtl.c",
+		   "ble_mgr_gap.c",
+		   "ble_mgr_gatts.c",
+		   "ble_mgr_gattc.c",
+		   "ble_mgr_l2cap.c",
+		   "storage.c",
+		   "storage_flash.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module sdk_util {
+	@Cflags("-Wno-undef")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/util/src")
+	source "sdk_queue.c",
+		   "sdk_list.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}

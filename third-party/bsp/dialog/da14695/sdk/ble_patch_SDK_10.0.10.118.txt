@@ -1,0 +1,119 @@
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c	2020-07-07 07:08:18.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c	2020-09-01 17:57:59.804577323 +0300
+@@ -19,8 +19,8 @@
+ #include "ble_config.h"
+ 
+ #include "osal.h"
+-#include "queue.h"
+-#include "event_groups.h"
++// #include "queue.h"
++// #include "event_groups.h"
+ #if (BLE_WINDOW_STATISTICS == 1) || (BLE_SLEEP_PERIOD_DEBUG == 1)
+ #include "logging.h"
+ #endif
+@@ -247,6 +247,7 @@
+         OS_TASK_NOTIFY(adapter_if.task, mainBIT_EVENT_QUEUE_AVAIL, OS_NOTIFY_SET_BITS);
+ }
+ 
++#include "interrupts.h"
+ void ad_ble_task_notify(uint32_t value)
+ {
+         if (in_interrupt()) {
+@@ -494,7 +495,7 @@
+                 /* Check if we should call the previously skipped TX done callback */
+                 if (ulNotifiedValue & mainBIT_EVENT_QUEUE_AVAIL) {
+                         sleep_status = BLE_ACTIVE;
+-                        if (ad_ble_stack_wr_cb && uxQueueSpacesAvailable(adapter_if.evt_q)) {
++                        if (ad_ble_stack_wr_cb && OS_QUEUE_SPACES_AVAILABLE(adapter_if.evt_q)) {
+                                 /* Call pending BLE stack write callback */
+                                 ad_ble_stack_wr_cb(BLE_STACK_IO_OK);
+ 
+@@ -535,7 +536,7 @@
+ 
+                 if (ulNotifiedValue & mainBIT_COMMAND_QUEUE) {
+                         /* The message may have already been read in the while () loop below! */
+-                        if ( OS_QUEUE_GET(adapter_if.cmd_q, &received_msg, 0)) {
++                        if ( OS_QUEUE_GET(adapter_if.cmd_q, &received_msg, 0) == OS_QUEUE_OK) {
+                                 /* Make sure a valid OP CODE is received */
+                                 OS_ASSERT(received_msg->op_code < AD_BLE_OP_CODE_LAST);
+                                 current_op = received_msg->op_code;
+@@ -586,7 +587,7 @@
+ 
+ 
+                         /* Check command queue for incoming messages */
+-                        if (uxQueueMessagesWaiting(adapter_if.cmd_q)) {
++                        if (OS_QUEUE_MESSAGES_WAITING(adapter_if.cmd_q)) {
+                                 /* Get message from the command queue. */
+                                 OS_QUEUE_GET(adapter_if.cmd_q, &received_msg, 0);
+                                 /* Make sure a valid op code is received */
+@@ -810,9 +811,9 @@
+                         ble_stack_initialized = true;
+ 
+                         /* Apply TCS settings */
+-                        ad_ble_sys_tcs_config();
+-                        ad_ble_synth_tcs_config();
+-                        ad_ble_rfcu_tcs_config();
++                        //ad_ble_sys_tcs_config();
++                        //ad_ble_synth_tcs_config();
++                        //ad_ble_rfcu_tcs_config();
+ #if (USE_BLE_SLEEP == 1)
+                         ad_ble_update_wakeup_time();
+                         #if (dg_configUSE_LP_CLK == LP_CLK_RCX)
+@@ -967,7 +968,7 @@
+                         /* Post item to queue. */
+                         if (ad_ble_event_queue_send(&msgBuf, 0) == OS_OK) {
+                                 /* Check free space on BLE adapter's event queue. */
+-                                if (uxQueueSpacesAvailable(adapter_if.evt_q)) {
++                                if (OS_QUEUE_SPACES_AVAILABLE(adapter_if.evt_q)) {
+                                         /* Call BLE stack I/O TX done callback right away. */
+                                         callback(BLE_STACK_IO_OK);
+                                 } else {
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/stack/da14690/src/arch_main.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/stack/da14690/src/arch_main.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/stack/da14690/src/arch_main.c	2020-07-07 07:08:18.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/stack/da14690/src/arch_main.c	2020-09-01 16:22:14.478929902 +0300
+@@ -52,7 +52,7 @@
+ void lib_ble_stack_reset(uint8_t reset_type);
+ bool cmac_cpu_wakeup(void);
+ 
+-void timer_init(void);
++static void ble_timer_init(void);
+ void ble_timer_callback(void* varg);
+ 
+ bool ke_sleep_check(void);
+@@ -330,6 +330,7 @@
+  *       CMAC parameters.
+  ****************************************************************************************
+  */
++extern int os_arch_main_init(void);
+ void ble_stack_init(void)
+ {
+         /* Make sure that LP clock is enabled */
+@@ -353,7 +354,9 @@
+         }
+ 
+         /* Initialize BLE timer */
+-        timer_init();
++        ble_timer_init();
++
++	os_arch_main_init();
+ 
+         /* Initialize BLE stack (Controller and Host) */
+         lib_ble_stack_init();
+@@ -479,7 +482,7 @@
+ /*
+  * @brief Initialize BLE timer
+  */
+-void timer_init(void)
++static void ble_timer_init(void)
+ {
+         ble_timer = OS_TIMER_CREATE("ble_tmr", 100 /* Dummy */, 0, 0, ble_timer_callback);
+         OS_ASSERT(ble_timer);
+@@ -568,4 +571,7 @@
+ #endif
+ }
+ 
++void crypto_init(void) {
++}
++
+ #endif /* CONFIG_USE_BLE */
