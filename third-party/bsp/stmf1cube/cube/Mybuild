@@ -2,12 +2,10 @@ package third_party.bsp.stmf1cube
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
 @BuildDepends(third_party.bsp.stmf1cube.stm32f1_bsp)
-@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -I$(ROOT_DIR)/third-party/bsp/stmf1cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-master/,Drivers/STM32F1xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include Drivers/BSP/STM32F1xx_Nucleo )")
+@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -I$(ROOT_DIR)/third-party/bsp/stmf1cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-master/,Drivers/STM32F1xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include  )")
 static module cube {
 
 	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
-	option number eth_rx_packet_count = 4
-	option number eth_tx_packet_count = 2
 
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
