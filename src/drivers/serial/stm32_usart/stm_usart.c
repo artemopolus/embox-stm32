@@ -30,11 +30,7 @@ static int stm32_uart_hasrx(struct uart *dev) {
 
 	/* Clear possible Overruns. It can happen, for example,
 	 * when start scripts executed and you press buttons at the same time. */
-
-#ifdef STM32F103xB
-#else
 	STM32_USART_CLEAR_ORE(uart);
-#endif
 
 	return STM32_USART_FLAGS(uart) & USART_FLAG_RXNE;
 }

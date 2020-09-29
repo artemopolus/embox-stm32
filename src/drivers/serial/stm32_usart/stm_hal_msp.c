@@ -367,9 +367,8 @@ static GPIO_TypeDef *USART_TX_GPIO_PORT(void *usart_base) {
 	}
 	return 0;
 }
-#ifdef STM32F103xB
 
-#else
+#ifndef STM32F1_CUBE
 static uint8_t USART_TX_AF(void *usart_base) {
 	switch((uintptr_t)usart_base) {
 #if defined(USART1) &&  defined(CONF_USART1_ENABLED)
@@ -465,7 +464,7 @@ static uint8_t USART_RX_AF(void *usart_base) {
 	}
 	return 0;
 }
-#endif
+#endif /* STM32F1_CUBE */
 
 void HAL_UART_MspInit(UART_HandleTypeDef *huart) {
 	GPIO_InitTypeDef  GPIO_InitStruct;
@@ -484,19 +483,17 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart) {
 	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Pull      = GPIO_NOPULL;
 	GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
-#ifdef STM32F103xB
-#else
-	// GPIO_InitStruct.Alternate = USART_TX_AF(uart_base);
+#ifndef STM32F1_CUBE
+	GPIO_InitStruct.Alternate = USART_TX_AF(uart_base);
 #endif
 	HAL_GPIO_Init(USART_TX_GPIO_PORT(uart_base), &GPIO_InitStruct);
 
 	/* UART RX GPIO pin configuration  */
 	GPIO_InitStruct.Pin = USART_RX_PIN(uart_base);
-#ifdef STM32F103xB
-#else
-
-	// GPIO_InitStruct.Alternate = USART_RX_AF(uart_base);
+#ifndef STM32F1_CUBE
+	GPIO_InitStruct.Alternate = USART_RX_AF(uart_base);
 #endif
+
 	HAL_GPIO_Init(USART_RX_GPIO_PORT(uart_base), &GPIO_InitStruct);
 	/* TODO ##-3- Configure the NVIC for UART ########################################*/
 }
