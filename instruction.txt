@@ -1,0 +1,235 @@
+после того как сконфигурирован nuttx то есть возможно какое-то пересечение настроек
+
+
+
+
+git clone https://github.com/embox/embox
+
+sudo apt-get install make gcc \
+        build-essential gcc-multilib \
+        curl libmpc-dev python
+
+sudo apt install gcc-arm-none-eabi
+
+cd embox
+
+make confload для получения вариантов сборок
+
+make confload-arm/stm32_vl
+
+make -j4
+
+fatal error: module/embox/kernel/task/resource/sig_table.h: No such file or directory
+ #include <module/embox/kernel/task/resource/sig_table.h>
+          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+
+
+make confload-arm/stm32f746g-discovery
+
+make -j4
+
+
+CONFIGFILE conf/mods.conf
+ CONFIGLINK
+ BUILDMODEL
+(Unknown):: error: No abstract realization: embox.arch.vfork_entry.
+ BUILDGEN /home/artem/workspace/embox-port-stm32/build
+make[4]: execvp: /home/artem/workspace/embox-port-stm32/mk/gen_ld_regions.sh: Permission denied
+mk/script/build/oldconf-gen.mk:82: recipe for target '/home/artem/workspace/embox-port-stm32/build/base/gen/regions.lds.h' failed
+make[4]: *** [/home/artem/workspace/embox-port-stm32/build/base/gen/regions.lds.h] Error 127
+mk/build.mk:36: recipe for target '/home/artem/workspace/embox-port-stm32/build/base/build-gen.timestamp' failed
+make[3]: *** [/home/artem/workspace/embox-port-stm32/build/base/build-gen.timestamp] Error 2
+mk/load.mk:41: recipe for target 'build' failed
+make[2]: *** [build] Error 2
+mk/main.mk:30: recipe for target 'build' failed
+make[1]: *** [build] Error 2
+Makefile:40: recipe for target 'all' failed
+make: *** [all] Error 2
+
+fix that:
+chmod +x /home/artem/workspace/embox-port-stm32/mk/gen_ld_sections.sh 
+chmod +x /home/artem/workspace/embox-port-stm32/mk/gen_ld_regions.sh 
+chmod +x /home/artem/workspace/embox-port-stm32/mk/gen_ld_phdrs.sh
+chmod +x /home/artem/workspace/embox-port-stm32/mk/gen_ld_section_symbols.sh
+
+problem next:
+
+CONFIGFILE conf/mods.conf
+ CONFIGLINK
+ BUILDMODEL
+(Unknown):: error: No abstract realization: embox.arch.vfork_entry.
+ BUILDGEN /home/artem/workspace/embox-port-stm32/build
+Error: modules dependency cycle:
+	embox.fs.driver.devfs_old
+	embox.fs.rootfs
+	embox.fs.node
+	embox.driver.block_dev
+	embox.driver.common
+
+Решение:
+include embox.fs.driver.initfs_dvfs
+include embox.fs.driver.devfs_dvfs
+include embox.fs.rootfs_dvfs(fstype="initfs")
+include embox.fs.driver.fat_dvfs
+
+include embox.driver.char_dev
+
+include embox.fs.dvfs.core(inode_pool_size=16, dentry_pool_size=16, inode_pool_size=16)
+include embox.compat.posix.fs.all_dvfs
+include embox.fs.syslib.perm_stub
+include embox.driver.block_dev
+
+/home/artem/workspace/embox-port-stm32/mk/board_conf/gen_board_conf.c: In function ‘main’:
+/home/artem/workspace/embox-port-stm32/mk/board_conf/gen_board_conf.c:95:33: error: ‘board_config’ undeclared (first use in this function); did you mean ‘uart_conf’?
+  struct conf_item *uart_conf = &board_config[UART_IDX];
+                                 ^~~~~~~~~~~~
+                                 uart_conf
+/home/artem/workspace/embox-port-stm32/mk/board_conf/gen_board_conf.c:95:33: note: each undeclared identifier is reported only once for each function it appears in
+/home/artem/workspace/embox-port-stm32/mk/board_conf/gen_board_conf.c:98:2: warning: implicit declaration of function ‘config’; did you mean ‘confstr’? [-Wimplicit-function-declaration]
+  config();
+  ^~~~~~
+  confstr
+
+
+Решение:
+Добавить stm32f103_base.conf.h
+и данные в stm32f103-base/board.conf.h
+
+ next problem:
+
+/home/artem/workspace/embox-port-stm32/build/base/include/drivers/serial/stm_usart.h:4:10: fatal error: stm32f1xx_hal.h: No such file or directory
+ #include "stm32f1xx_hal.h"
+          ^~~~~~~~~~~~~~~~~
+compilation terminated.
+
+
+make[5]: *** No rule to make target 'build/extbld/third_party/bsp/stmf1cube/cube/STM32CubeF1-master/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cryp.o', needed by '/home/artem/workspace/embox-port-stm32/build/base/obj/module/third_party/bsp/stmf1cube/cube.a'.  Stop.
+
+EMBOX_GCC_LINK=full /home/artem/workspace/embox-port-stm32/mk/extbld/arch-embox-gcc /home/artem/workspace/embox-port-stm32/mk/extbld/toolchain_test.c -o /home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test
+/home/artem/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/bin/ld: /home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test section `.text' will not fit in region `ROM'
+/home/artem/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/bin/ld: /home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test section `.bss' will not fit in region `RAM'
+/home/artem/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/bin/ld: region `RAM' overflowed by 54368 bytes
+/home/artem/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/bin/ld: region `ROM' overflowed by 104344 bytes
+./build/base/obj/embox.o: In function `stm32_uart_setup':
+/src/drivers/serial/stm32_usart/stm_usart.c:62: undefined reference to `HAL_UART_Init'
+./build/base/obj/embox.o: In function `__test_case_at_line_60':
+/src/tests/kernel/thread/thread_test.c:67: undefined reference to `sleep'
+./build/base/obj/embox.o: In function `__test_case_at_line_85':
+/src/tests/kernel/thread/thread_test.c:91: undefined reference to `sleep'
+collect2: error: ld returned 1 exit status
+mk/extbld/toolchain.mk:77: recipe for target '/home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test' failed
+make[4]: *** [/home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test] Error 1
+mk/build.mk:19: recipe for target 'build' failed
+make[3]: *** [build] Error 2
+mk/load.mk:41: recipe for target 'build' failed
+make[2]: *** [build] Error 2
+mk/main.mk:30: recipe for target 'build' failed
+make[1]: *** [build] Error 2
+Makefile:40: recipe for target 'all' failed
+make: *** [all] Error 2
+
+
+--cref -Map /home/artem/workspace/embox-port-stm32/build/base/obj/embox.o.map \
+-o /home/artem/workspace/embox-port-stm32/build/base/obj/embox.o
+EMBOX_GCC_LINK=full /home/artem/workspace/embox-port-stm32/mk/extbld/arch-embox-gcc /home/artem/workspace/embox-port-stm32/mk/extbld/toolchain_test.c -o /home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test
+/home/artem/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/bin/ld: /home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test section `.rodata' will not fit in region `ROM'
+/home/artem/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/bin/ld: /home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test section `.bss' will not fit in region `RAM'
+/home/artem/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/bin/ld: region `RAM' overflowed by 14464 bytes
+/home/artem/gcc-arm-none-eabi-7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/bin/ld: region `ROM' overflowed by 59256 bytes
+collect2: error: ld returned 1 exit status
+mk/extbld/toolchain.mk:77: recipe for target '/home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test' failed
+make[4]: *** [/home/artem/workspace/embox-port-stm32/build/base/obj/toolchain_test] Error 1
+mk/build.mk:19: recipe for target 'build' failed
+make[3]: *** [build] Error 2
+mk/load.mk:41: recipe for target 'build' failed
+make[2]: *** [build] Error 2
+mk/main.mk:30: recipe for target 'build' failed
+make[1]: *** [build] Error 2
+Makefile:40: recipe for target 'all' failed
+make: *** [all] Error 2
+
+
+
+arm-none-eabi-gdb workspace/embox/build/base/bin/embox
+GNU gdb (GNU Tools for Arm Embedded Processors 7-2017-q4-major) 8.0.50.20171128-git
+Copyright (C) 2017 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "--host=x86_64-linux-gnu --target=arm-none-eabi".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from workspace/embox/build/base/bin/embox...done.
+(gdb) target remote : 3333
+Remote debugging using : 3333
+start () at /src/arch/arm/armmlib/exception_table.S:49
+49  /src/arch/arm/armmlib/exception_table.S: No such file or directory.
+(gdb) cont
+Continuing.
+^C
+Program received signal SIGINT, Interrupt.
+0x080005c0 in stm32_uart_putc (dev=0x20000440 <stm32_uart0>, ch=114)
+    at /src/drivers/serial/stm32_usart.c:67
+67  /src/drivers/serial/stm32_usart.c: No such file or directory.
+(gdb) quit
+A debugging session is active.
+
+  Inferior 1 [Remote target] will be detached.
+
+Quit anyway? (y or n) y
+Detaching from program: /home/artem/workspace/embox/build/base/bin/embox, Remote target
+Ending remote debugging.
+
+В общем, конкретно кубовская библиотека много не занимает, проблема оказалась в другом.
+Методом научного тыка пришел к выводу, что проблема в этих двух строчках:
+@Runlevel(1) include embox.driver.serial.stm32_usart(baud_rate=115200)
+@Runlevel(1) include embox.driver.diag(impl="embox__driver__serial__stm32_usart")
+/* @Runlevel(1) include embox.driver.serial.stm_usart_f1(baud_rate=115200, usartx=2) */
+/* @Runlevel(1) include embox.driver.diag(impl="embox__driver__serial__stm_usart_f1") */
+С первым, все работает и помещается на контроллер(ВСЕ УСПЕШНО), со второй, закомментированной, не помещается.
+Условно, эта реализация:
+module stm32_usart extends embox.driver.diag.diag_api {
+  option number baud_rate
+  /*option boolean hw_flow = false*/
+
+  source "stm32_usart.c"
+
+  depends embox.driver.gpio.stm32
+  depends core
+  depends diag
+}
+меньше, чем эта:
+module stm_usart_f1 extends embox.driver.diag.diag_api {
+  option number baud_rate
+  option number usartx=1
+  option number usart1_irq=37
+  option number usart2_irq=38
+
+  @IncludeExport(path="drivers/serial", target_name="stm_usart.h")
+  source "stm32_usart_conf_f1.h"
+
+  source "stm_hal_msp.c"
+  source "stm_diag.c"
+  source "stm_usart.c"
+
+  depends embox.driver.serial.core
+  depends embox.driver.serial.diag
+
+  depends third_party.bsp.st_bsp_api
+}
+
+https://github.com/artemopolus/embox-stm32
+
+make clean cacheclean
+make confload-arm/stm32f103-cube
+make -j4
+
+
+по поводу работы с настройками через platform. Мне нужен spi для работы с датчиком. Я так понял, наиболее подходящий пример под мои запросы platform/stm32f4_multibots. Вопрос структурный: инициализация spi происходит в папке cmds. Это значит, что эта задача запускается через shell? (а как посмотреть список доступных shell команд) А чтобы она запускалась автоматически нужно прописать в mods.conf @Runlevel(приоритет?) include.path_to_file? Свою реализацию файла arch.c тоже надо в определенную папку ложить? 
