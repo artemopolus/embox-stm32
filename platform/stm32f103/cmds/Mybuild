@@ -1,0 +1,9 @@
+package stm32f103
+
+@AutoCmd
+@Cmd(name="test_sns", help=" Test for sensors lsm303ah and ism330dlc ")
+module test_sns {
+	source "test_sns.c"
+
+	depends embox.compat.posix.util.sleep
+}
