@@ -51,13 +51,35 @@ static int apollon_lsm303ah_init(void)
   return 0;
 }
 
-uint8_t apollon_lsm303ah_spi_get_option(void)
+uint8_t apollon_lsm303ah_spi_get_option(uint8_t address)
 {
-  return 0;
+  uint8_t value = address | 0x80;
+	LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_4);
+	while(!LL_SPI_IsActiveFlag_TXE(SPI1));
+	LL_SPI_TransmitData8(SPI1, value);
+	while(!LL_SPI_IsActiveFlag_TXE(SPI1));
+	while(LL_SPI_IsActiveFlag_BSY(SPI1));
+	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_RX);
+	while(!LL_SPI_IsActiveFlag_RXNE(SPI1));
+	uint8_t result = 0;
+	result = LL_SPI_ReceiveData8(SPI1);
+	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
+	LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_4);
+  return result;
 
 }
-uint8_t apollon_lsm303ah_spi_set_option(uint8_t value)
+uint8_t apollon_lsm303ah_spi_set_option(uint8_t address, uint8_t value)
 {
+  uint8_t mask = 0x7F ;//01111111b
+	mask &= address;
+  LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_4);
+  while(!LL_SPI_IsActiveFlag_TXE(SPI1));
+  LL_SPI_TransmitData8(SPI1, mask);
+  while(!LL_SPI_IsActiveFlag_TXE(SPI1));
+	LL_SPI_TransmitData8(SPI1, value);
+	while(!LL_SPI_IsActiveFlag_TXE(SPI1));
+	while(LL_SPI_IsActiveFlag_BSY(SPI1));
+	LL_GPIO_SetOutputPin(GPIOA,PinMask);
   return 0;
 
 }

@@ -6,4 +6,6 @@ module test_sns {
 	source "test_sns.c"
 
 	depends embox.compat.posix.util.sleep
+
+	depends stm32f103.lsm303ah.base
 }
