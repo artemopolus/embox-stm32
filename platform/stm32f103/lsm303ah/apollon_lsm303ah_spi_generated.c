@@ -36,6 +36,9 @@ static int apollon_lsm303ah_spi_init( struct apollon_lsm303ah_spi_dev *dev )
   PA5   ------> SPI1_SCK
   PA7   ------> SPI1_MOSI
   */
+  /* spi software cs */
+  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_4, LL_GPIO_MODE_OUTPUT);
+
   GPIO_InitStruct.Pin = LL_GPIO_PIN_5|LL_GPIO_PIN_7;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
