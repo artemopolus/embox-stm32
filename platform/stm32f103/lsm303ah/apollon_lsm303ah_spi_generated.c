@@ -1,3 +1,16 @@
+#include "stm32f1xx_hal.h"
+#include "stm32f1xx_ll_dma.h"
+#include "stm32f1xx_ll_spi.h"
+#include "stm32f1xx_ll_rcc.h"
+#include "stm32f1xx_ll_bus.h"
+#include "stm32f1xx_ll_system.h"
+#include "stm32f1xx_ll_exti.h"
+#include "stm32f1xx_ll_cortex.h"
+#include "stm32f1xx_ll_utils.h"
+#include "stm32f1xx_ll_pwr.h"
+#include "stm32f1xx.h"
+#include "stm32f1xx_ll_gpio.h"
+
 #include "apollon_lsm303ah_spi_generated.h"
 #include <embox/unit.h>
 #include <kernel/printk.h>
@@ -44,6 +57,7 @@ static int apollon_lsm303ah_spi_init( struct apollon_lsm303ah_spi_dev *dev )
   LL_SPI_Enable(SPI1);
 	LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_4);
 
+	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
   return 0;
 
 }
@@ -82,7 +96,7 @@ uint8_t apollon_lsm303ah_spi_set_option(uint8_t address, uint8_t value)
 	LL_SPI_TransmitData8(SPI1, value);
 	while(!LL_SPI_IsActiveFlag_TXE(SPI1));
 	while(LL_SPI_IsActiveFlag_BSY(SPI1));
-	LL_GPIO_SetOutputPin(GPIOA,PinMask);
+	LL_GPIO_SetOutputPin(GPIOA,LL_GPIO_PIN_4);
   return 0;
 
 }

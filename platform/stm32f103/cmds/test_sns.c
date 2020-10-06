@@ -15,12 +15,23 @@ int main(int argc, char *argv[]) {
 	value_xl = apollon_lsm303ah_spi_get_option(0x0f);
 	if (value_xl == 0x43)
 	{
+		printf("whoami xl test success!");
 		// value_mg = read_lsm303ah(0x4f);
 		value_mg = apollon_lsm303ah_spi_get_option(0x4f);
  		if(0x40 == value_mg)      res = 1;
-		if(0x41 == value_mg)     res = 1;
+		else if(0x41 == value_mg)     res = 1;
+		else
+		{
+			printf("howami mg test failed!");
+		}
+		
 	}
+	else
+	{
+		printf("whoami xl test failed!");
+	}
+	
 
 
-	return 0;
+	return res;
 }

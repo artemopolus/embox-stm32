@@ -1,4 +1,4 @@
-package stm32f103
+package stm32f103.cmd
 
 @AutoCmd
 @Cmd(name="test_sns", help=" Test for sensors lsm303ah and ism330dlc ")
@@ -8,4 +8,5 @@ module test_sns {
 	depends embox.compat.posix.util.sleep
 
 	depends stm32f103.lsm303ah.base
+	depends third_party.bsp.stmf1cube.cube
 }
