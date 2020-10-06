@@ -41,6 +41,9 @@ static int apollon_lsm303ah_spi_init( struct apollon_lsm303ah_spi_dev *dev )
   SPI_InitStruct.CRCPoly = 10;
   LL_SPI_Init(SPI1, &SPI_InitStruct);
 
+  LL_SPI_Enable(SPI1);
+	LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_4);
+
   return 0;
 
 }
