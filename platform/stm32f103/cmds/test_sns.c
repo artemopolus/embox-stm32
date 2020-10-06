@@ -13,6 +13,15 @@ int main(int argc, char *argv[]) {
 	apollon_lsm303ah_spi_set_option(0x21, 0x05);
 	// value_xl = read_lsm303ah(0x0f);
 	value_xl = apollon_lsm303ah_spi_get_option(0x0f);
+	printf("v= %d. try next data!\n", value_xl);
+	value_xl = apollon_lsm303ah_spi_get_option(0x0f);
+	printf("v= %d. try next data!\n", value_xl);
+	value_xl = apollon_lsm303ah_spi_get_option(0x0f);
+	printf("v= %d. try next data!\n", value_xl);
+	value_xl = apollon_lsm303ah_spi_get_option(0x0f);
+	printf("v= %d. try next data!\n", value_xl);
+	value_xl = apollon_lsm303ah_spi_get_option(0x0f);
+	printf("v= %d. try next data!\n", value_xl);
 	if (value_xl == 0x43)
 	{
 		printf("whoami xl test success!");
