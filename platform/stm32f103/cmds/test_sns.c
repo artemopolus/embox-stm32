@@ -40,7 +40,11 @@ int main(int argc, char *argv[]) {
 		printf("whoami xl test failed!");
 	}
 	
-
+	if (res)
+	{
+		printf("All done right!\n");
+		res = 0;
+	}
 
 	return res;
 }
