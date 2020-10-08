@@ -1,0 +1,8 @@
+package stm32f103.ism330dlc
+
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module base{
+	source "apollon_ism330dlc_spi_generated.c"
+	@IncludeExport(path="ism330dlc")
+	source "apollon_ism330dlc_spi_generated.h"
+}
