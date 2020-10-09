@@ -75,6 +75,13 @@ uint8_t apollon_lsm303ah_spi_get_option(uint8_t address)
 {
   uint8_t value = address | 0x80;
 	LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_4);
+
+  if (LL_GPIO_IsOutputPinSet(GPIOA, LL_GPIO_PIN_4))
+  return 0;
+
+  if (LL_GPIO_IsPinLocked(GPIOA,LL_GPIO_PIN_4 ))
+    return 2;
+
 	while(!LL_SPI_IsActiveFlag_TXE(SPI1));
 	LL_SPI_TransmitData8(SPI1, value);
 	while(!LL_SPI_IsActiveFlag_TXE(SPI1));
