@@ -1,0 +1,8 @@
+package stm32f103.bmp280
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module base{
+	source "apollon_bmp280_spi_generated.c"
+	@IncludeExport(path="bmp280")
+	source "apollon_bmp280_spi_generated.h"
+
+}
