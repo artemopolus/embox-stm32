@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 	apollon_lsm303ah_spi_set_option(0x21, 0x05);
 	// value_xl = read_lsm303ah(0x0f);
 	uint8_t address_lsm303ah = 0x0f;
-	for (uint8_t i = 0; i < 5; i++)
+	for (uint8_t i = 0; i < 10; i++)
 	{
 		/* code */
 		value_xl = apollon_lsm303ah_spi_get_option(address_lsm303ah);
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 	apollon_ism330dlc_spi_set_option(0x12, 0x0C);
 	
 	uint8_t address_ism330dlc = 0x0f;	
-	for (uint8_t i = 0; i < 5; i++)
+	for (uint8_t i = 0; i < 10; i++)
 	{
 		value_xl = apollon_ism330dlc_spi_get_option(address_ism330dlc);
 		printf("Get value from %#04x = %d ( %#04x )\n", address_ism330dlc, value_xl, value_xl);
@@ -59,6 +59,7 @@ int main(int argc, char *argv[]) {
 	if (value_xl == 0x6A)
 	{
 		printf("whoami test for ism330dlc done!\n");
+		res = 1;
 	}
 	if (res)
 	{
