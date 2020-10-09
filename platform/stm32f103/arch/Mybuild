@@ -1,0 +1,10 @@
+package stm32f103.arch
+
+@BuildDepends(system_init)
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module arch extends embox.arch.arch {
+  source "arch.c"
+
+  @NoRuntime depends system_init
+  depends third_party.bsp.stmf1cube.cube
+}

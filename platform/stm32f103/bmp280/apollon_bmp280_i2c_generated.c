@@ -15,7 +15,7 @@
 
 #include "apollon_bmp280_i2c_generated.h"
 #include <embox/unit.h>
-#include <kernel/printk.h
+#include <kernel/printk.h>
 
 
 #define BMP280_I2C_ADDR_PRIM                 UINT8_C(0x76)
