@@ -1,5 +1,15 @@
 package stm32f103.arch
 
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+static module system_init extends third_party.bsp.st_bsp_api {
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1")
+	source "system_stm32f1xx.c"
+
+	@NoRuntime depends third_party.bsp.stmf1cube.cube
+}
+
 @BuildDepends(system_init)
 @BuildDepends(third_party.bsp.stmf1cube.cube)
 module arch extends embox.arch.arch {
