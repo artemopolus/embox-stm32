@@ -4,6 +4,7 @@
 
 #include "lsm303ah/apollon_lsm303ah_spi_generated.h"
 #include "ism330dlc/apollon_ism330dlc_spi_generated.h"
+#include "bmp280/apollon_bmp280_i2c_generated.h"
 
 int main(int argc, char *argv[]) {
 
@@ -70,7 +71,23 @@ int main(int argc, char *argv[]) {
 	{
 		printf("something gone wrong!\n");
 	}
+
+	printf("Start test for bmp280\n");
+
+	const uint8_t bmp280_whoami_reg = 0xd0;
+	const uint8_t bmp280_whoami_val = 0x58;
+
+	value_xl = apollon_bmp280_spi_get_option(bmp280_whoami_reg);
+
+	printf("Get WhoAmI [%#04x]=[%#04x]:", bmp280_whoami_reg, value_xl);
+
+	if (value_xl == bmp280_whoami_val)
+		printf("OK");
+	else
+		printf("Failed!");
 	
+	printf("\n");
+
 
 	return res;
 }

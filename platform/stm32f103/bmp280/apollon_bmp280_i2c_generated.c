@@ -20,8 +20,10 @@
 
 #define BMP280_I2C_ADDR_PRIM                 UINT8_C(0x76)
 #define BMP280_I2C_ADDR_SEC                  UINT8_C(0x77)
-#define BMP280_I2c_ADDR     BMP280_I2C_ADDR_PRIM
+#define BMP280_I2c_ADDR     BMP280_I2C_ADDR_SEC
 #define I2Cx I2C2
+#define I2C_REQUEST_WRITE                       0x00
+#define I2C_REQUEST_READ                        0x01
 
 EMBOX_UNIT_INIT(apollon_bmp280_init);
 static int apollon_bmp280_init(void)
@@ -79,13 +81,15 @@ uint8_t apollon_bmp280_spi_get_option(const uint8_t address)
 	LL_I2C_TransmitData8(I2Cx, address);
 	while (!LL_I2C_IsActiveFlag_TXE(I2Cx));
 	/* wait SAK */
-	while(!LL_I2C_IsActiveFlag_ADDR(I2Cx));
+	LL_I2C_AcknowledgeNextData(I2Cx, LL_I2C_ACK);
+	// while(!LL_I2C_IsActiveFlag_ADDR(I2Cx));
 	/* SR ; SAD + R */
 	LL_I2C_GenerateStartCondition(I2Cx);
 	while (!LL_I2C_IsActiveFlag_SB(I2Cx));
-	LL_I2C_AcknowledgeNextData(I2Cx, LL_I2C_ACK);
 	LL_I2C_TransmitData8(I2Cx, trg  | I2C_REQUEST_READ);
 	/* wait SAK + DATA*/
+	// while (!LL_I2C_IsActiveFlag_TXE(I2Cx));
+	LL_I2C_AcknowledgeNextData(I2Cx, LL_I2C_ACK);
 	while(!LL_I2C_IsActiveFlag_ADDR(I2Cx));
 	LL_I2C_ClearFlag_ADDR(I2Cx);
 	while (!LL_I2C_IsActiveFlag_RXNE(I2Cx));
