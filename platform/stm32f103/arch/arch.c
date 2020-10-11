@@ -14,6 +14,8 @@
 #include <module/embox/arch/system.h>
 
 
+void Error_Handler();
+
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -46,6 +48,11 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+void Error_Handler()
+{
+  while(1);
 }
 
 void arch_init(void) {
