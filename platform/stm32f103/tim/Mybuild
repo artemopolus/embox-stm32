@@ -1,0 +1,8 @@
+package stm32f103.tim
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module base{
+	source "apollon_tim_generated.c"
+	@IncludeExport(path="tim")
+	source "apollon_tim_generated.h"
+}
+
