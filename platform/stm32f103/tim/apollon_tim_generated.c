@@ -51,7 +51,7 @@ static uint32_t InitialAutoreload = 0;
 
   uint8_t res = 0;
 
-  res |= irq_attach(TIM3_IRQn, tim_irq_handler, 0, NULL, "tim_irq_handler");
+  res |= irq_attach(29, tim_irq_handler, 0, NULL, "tim_irq_handler");
 	// if (res < 0) {
 		// log_error("irq_attach failed\n");
 		// return -1;
@@ -61,13 +61,13 @@ static uint32_t InitialAutoreload = 0;
 static irq_return_t tim_irq_handler(unsigned int irq_nr, void * data)
 {
     /* Check whether update interrupt is pending */
-    if(LL_TIM_IsActiveFlag_UPDATE(TIM2) == 1)
+    if(LL_TIM_IsActiveFlag_UPDATE(TIM3) == 1)
     {
     /* Clear the update interrupt flag*/
-        LL_TIM_ClearFlag_UPDATE(TIM2);
+        LL_TIM_ClearFlag_UPDATE(TIM3);
     }
     /* lthread gogogogo */
 
     return IRQ_HANDLED;
 }
-STATIC_IRQ_ATTACH(TIM3_IRQn, tim_irq_handler, NULL);
+STATIC_IRQ_ATTACH(29, tim_irq_handler, NULL);

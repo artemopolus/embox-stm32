@@ -15,7 +15,6 @@
 #include <embox/unit.h>
 #include <kernel/printk.h>
 
-#include <drivers/gpio/gpio.h>
 
 #define ISM330DLC_CS_Pin LL_GPIO_PIN_0
 #define ISM330DLC_CS_GPIO_Port GPIOB
