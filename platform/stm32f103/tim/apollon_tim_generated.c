@@ -11,23 +11,24 @@
 
 #include "apollon_tim_generated.h"
 
+#include <embox/unit.h>
 #include <kernel/irq.h>
 /* Initial autoreload value */
-static uint32_t InitialAutoreload = 0;
 
 /* Actual autoreload value multiplication factor */
-static uint8_t AutoreloadMult = 1;
+// static uint8_t AutoreloadMult = 1;
 
 /* TIM2 Clock */
-static uint32_t TimOutClock = 1;
 
-static TIM_HandleTypedef tim_handle;
+static irq_return_t tim_irq_handler(unsigned int irq_nr, void * data);
 
 EMBOX_UNIT_INIT(apollon_tim_init);
 static int apollon_tim_init(void)
 {
   LL_TIM_InitTypeDef TIM_InitStruct = {0};
+static uint32_t TimOutClock = 1;
 
+static uint32_t InitialAutoreload = 0;
   /* Peripheral clock enable */
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
 
@@ -45,19 +46,16 @@ static int apollon_tim_init(void)
 
   LL_TIM_EnableIT_UPDATE(TIM3);
     /* TIM3 interrupt Init */
-  NVIC_SetPriority(TIM3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
-  NVIC_EnableIRQ(TIM3_IRQn);
   LL_TIM_EnableCounter(TIM3);
   LL_TIM_GenerateEvent_UPDATE(TIM3);
 
   uint8_t res = 0;
 
-  res |= irq_attach(TIM3_IRQn, tim_irq_handler, 0,
-		tim_handle, "TIM events");
-	if (res < 0) {
-		log_error("irq_attach failed\n");
+  res |= irq_attach(TIM3_IRQn, tim_irq_handler, 0, NULL, "tim_irq_handler");
+	// if (res < 0) {
+		// log_error("irq_attach failed\n");
 		// return -1;
-	}
+	// }
     return 0;
 }
 static irq_return_t tim_irq_handler(unsigned int irq_nr, void * data)
@@ -72,4 +70,4 @@ static irq_return_t tim_irq_handler(unsigned int irq_nr, void * data)
 
     return IRQ_HANDLED;
 }
-STATIC_IRQ_ATTACH(TIM3_IRQn, tim_irq_handler, &tim_handle);
+STATIC_IRQ_ATTACH(TIM3_IRQn, tim_irq_handler, NULL);
