@@ -10,6 +10,7 @@
 #include "stm32f1xx.h"
 
 #include "apollon_tim_generated.h"
+#include <kernel/lthread/lthread.h>
 
 #include <embox/unit.h>
 #include <kernel/irq.h>
@@ -17,22 +18,24 @@
 
 /* Actual autoreload value multiplication factor */
 // static uint8_t AutoreloadMult = 1;
+static struct lthread tim_irq_lt;
 
 /* TIM2 Clock */
 
-static irq_return_t tim_irq_handler(unsigned int irq_nr, void * data);
+static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data);
+static int tim_handler(struct lthread *self)
 
 EMBOX_UNIT_INIT(apollon_tim_init);
 static int apollon_tim_init(void)
 {
   LL_TIM_InitTypeDef TIM_InitStruct = {0};
-static uint32_t TimOutClock = 1;
+  static uint32_t TimOutClock = 1;
 
-static uint32_t InitialAutoreload = 0;
+  static uint32_t InitialAutoreload = 0;
   /* Peripheral clock enable */
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
 
-  TimOutClock = SystemCoreClock/2;
+  TimOutClock = SystemCoreClock / 2;
   InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 10);
 
   TIM_InitStruct.Prescaler = __LL_TIM_CALC_PSC(SystemCoreClock, 10000);
@@ -40,34 +43,40 @@ static uint32_t InitialAutoreload = 0;
   TIM_InitStruct.Autoreload = InitialAutoreload;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
 
-
-
   LL_TIM_Init(TIM3, &TIM_InitStruct);
 
   LL_TIM_EnableIT_UPDATE(TIM3);
-    /* TIM3 interrupt Init */
+  /* TIM3 interrupt Init */
   LL_TIM_EnableCounter(TIM3);
   LL_TIM_GenerateEvent_UPDATE(TIM3);
 
   uint8_t res = 0;
 
   res |= irq_attach(29, tim_irq_handler, 0, NULL, "tim_irq_handler");
-	// if (res < 0) {
-		// log_error("irq_attach failed\n");
-		// return -1;
-	// }
-    return 0;
-}
-static irq_return_t tim_irq_handler(unsigned int irq_nr, void * data)
-{
-    /* Check whether update interrupt is pending */
-    if(LL_TIM_IsActiveFlag_UPDATE(TIM3) == 1)
-    {
-    /* Clear the update interrupt flag*/
-        LL_TIM_ClearFlag_UPDATE(TIM3);
-    }
-    /* lthread gogogogo */
+  // if (res < 0) {
+  // log_error("irq_attach failed\n");
+  // return -1;
+  // }
+  lthread_init(&tim_irq_lt, &tim_handler);
+  schedee_priority_set(&tim_irq_lt.schedee, 200);
 
-    return IRQ_HANDLED;
+  return 0;
+}
+static int tim_handler(struct lthread *self)
+{
+  // timer_strat_sched(cs_jiffies->jiffies);
+  return 0;
+}
+static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data)
+{
+  /* Check whether update interrupt is pending */
+  if (LL_TIM_IsActiveFlag_UPDATE(TIM3) == 1)
+  {
+    /* Clear the update interrupt flag*/
+    LL_TIM_ClearFlag_UPDATE(TIM3);
+  }
+  /* lthread gogogogo */
+
+  return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(29, tim_irq_handler, NULL);

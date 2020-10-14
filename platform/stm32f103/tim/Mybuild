@@ -4,5 +4,6 @@ module base{
 	source "apollon_tim_generated.c"
 	@IncludeExport(path="tim")
 	source "apollon_tim_generated.h"
+	depends embox.kernel.lthread.lthread
 }
 
