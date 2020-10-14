@@ -15,7 +15,7 @@
 #include <embox/unit.h>
 #include <kernel/printk.h>
 
-#define LSM303AH_BUFFER_SZ 2048 // 1024 == 85214   41140    6560  132914
+#define LSM303AH_BUFFER_SZ 3000 // 1024 == 85214   41140    6560  132914
 
 uint8_t Lsm303ahBuffer[LSM303AH_BUFFER_SZ];
 struct apollon_lsm303ah_spi_dev {
@@ -65,6 +65,9 @@ static int apollon_lsm303ah_spi_init( struct apollon_lsm303ah_spi_dev *dev )
 	LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_4);
 
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
+
+  Lsm303ahBuffer[0] = 0;
+
   return 0;
 
 }
