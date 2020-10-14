@@ -23,7 +23,7 @@ static struct lthread tim_irq_lt;
 /* TIM2 Clock */
 
 static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data);
-static int tim_handler(struct lthread *self)
+static int tim_handler(struct lthread *self);
 
 EMBOX_UNIT_INIT(apollon_tim_init);
 static int apollon_tim_init(void)
@@ -76,6 +76,7 @@ static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data)
     LL_TIM_ClearFlag_UPDATE(TIM3);
   }
   /* lthread gogogogo */
+  lthread_launch(&tim_irq_lt);
 
   return IRQ_HANDLED;
 }
