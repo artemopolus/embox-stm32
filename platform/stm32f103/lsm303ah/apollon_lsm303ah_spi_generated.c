@@ -14,6 +14,10 @@
 #include "apollon_lsm303ah_spi_generated.h"
 #include <embox/unit.h>
 #include <kernel/printk.h>
+
+#define LSM303AH_BUFFER_SZ 2048 // 1024 == 85214   41140    6560  132914
+
+uint8_t Lsm303ahBuffer[LSM303AH_BUFFER_SZ];
 struct apollon_lsm303ah_spi_dev {
 	int spi_bus;
 	struct spi_device *spi_dev;
