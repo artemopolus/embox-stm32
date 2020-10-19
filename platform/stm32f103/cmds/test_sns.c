@@ -6,6 +6,7 @@
 #include "ism330dlc/apollon_ism330dlc_spi_generated.h"
 #include "bmp280/apollon_bmp280_i2c_generated.h"
 #include "tim/apollon_tim_generated.h"
+#include "spi/apollon_spi2_generated.h"
 
 int main(int argc, char *argv[]) {
 
