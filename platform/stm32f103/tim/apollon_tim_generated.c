@@ -45,10 +45,6 @@ static int apollon_tim_init(void)
 
   LL_TIM_Init(TIM3, &TIM_InitStruct);
 
-  LL_TIM_EnableIT_UPDATE(TIM3);
-  /* TIM3 interrupt Init */
-  LL_TIM_EnableCounter(TIM3);
-  LL_TIM_GenerateEvent_UPDATE(TIM3);
 
   uint8_t res = 0;
 
@@ -60,6 +56,13 @@ static int apollon_tim_init(void)
   lthread_init(&tim_irq_lt, &tim_handler);
   schedee_priority_set(&tim_irq_lt.schedee, 200);
 
+  return 0;
+}
+static int apollon_tim_enable(void)
+{
+  LL_TIM_EnableIT_UPDATE(TIM3);
+  LL_TIM_EnableCounter(TIM3);
+  LL_TIM_GenerateEvent_UPDATE(TIM3);
   return 0;
 }
 static int tim_handler(struct lthread *self)
