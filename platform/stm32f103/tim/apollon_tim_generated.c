@@ -58,7 +58,7 @@ static int apollon_tim_init(void)
 
   return 0;
 }
-static int apollon_tim_enable(void)
+int apollon_tim_enable(void)
 {
   LL_TIM_EnableIT_UPDATE(TIM3);
   LL_TIM_EnableCounter(TIM3);
