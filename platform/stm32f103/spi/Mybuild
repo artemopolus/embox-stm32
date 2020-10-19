@@ -5,3 +5,9 @@ module spi2{
 	@IncludeExport(path="spi")
 	source "apollon_spi2_generated.h"
 }
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module spi2_master{
+	source "apollon_master_spi2_generated.c"
+	@IncludeExport(path="spi")
+	source "apollon_master_spi2_generated.h"
+}
