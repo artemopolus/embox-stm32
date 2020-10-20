@@ -10,10 +10,40 @@
 
 #include <embox/unit.h>
 #include <kernel/irq.h>
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/sync/mutex.h>
+
+// uint8_t aRxBuffer[sizeof(aTxBuffer)];
+
+#define RXTX_BUFFER_SIZE 10
+
+typedef struct{
+    uint8_t dt_buffer[RXTX_BUFFER_SIZE];
+    uint8_t dt_count;
+    struct mutex dt_mutex;
+    struct lthread dt_lth;
+}spi_buffer;
+
+static spi_buffer spi_rx_buffer{
+    .dt_count = RXTX_BUFFER_SIZE;
+};
+static spi_buffer spi_tx_buffer{
+    .dt_count = RXTX_BUFFER_SIZE;
+};
 
 static irq_return_t dma_tx_irq_handler(unsigned int irq_nr, void *data);
 static irq_return_t dma_rx_irq_handler(unsigned int irq_nr, void *data);
 
+static int spi2_receive_handler(struct lthread *self)
+{
+    /* обработка полученных данных */
+    return 0;
+}
+static int spi2_transmit_handler(struct lthread *self)
+{
+    /* действия после отправки данных */
+    return 0;
+}
 EMBOX_UNIT_INIT(apollon_spi2_init);
 static int apollon_spi2_init(void)
 {
@@ -56,6 +86,12 @@ static int apollon_spi2_init(void)
     LL_DMA_SetPeriphSize(DMA1, LL_DMA_CHANNEL_4, LL_DMA_PDATAALIGN_BYTE);
 
     LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_4, LL_DMA_MDATAALIGN_BYTE);
+    
+    LL_DMA_ConfigAddresses(DMA1,
+                         LL_DMA_CHANNEL_4,
+                         LL_SPI_DMA_GetRegAddr(SPI2), (uint32_t)spi_rx_buffer.dt_buffer,
+                         LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_4));
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, spi_rx_buffer.dt_count);
 
     /* SPI2_TX Init */
     LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
@@ -72,6 +108,11 @@ static int apollon_spi2_init(void)
 
     LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_5, LL_DMA_MDATAALIGN_BYTE);
 
+    LL_DMA_ConfigAddresses(DMA1, 
+                        LL_DMA_CHANNEL_5, (uint32_t)spi_tx_buffer.dt_buffer, 
+                        LL_SPI_DMA_GetRegAddr(SPI2),
+                        LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5));
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, spi_tx_buffer.dt_count);
     /* SPI2 interrupt Init */
     // NVIC_SetPriority(SPI2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
     // NVIC_EnableIRQ(SPI2_IRQn);
@@ -96,6 +137,8 @@ static int apollon_spi2_init(void)
     res &= irq_attach(14, dma_rx_irq_handler, 0, NULL, "tim_irq_handler");
 
     LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_INPUT);
+    lthread_init(&spi_tx_buffer.dt_lth, &spi2_transmit_handler);
+    lthread_init(&spi_rx_buffer.dt_lth, &spi2_receive_handler);
 
     LL_SPI_Enable(SPI2);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
@@ -108,6 +151,7 @@ static irq_return_t dma_tx_irq_handler(unsigned int irq_nr, void *data)
     {
         LL_DMA_ClearFlag_GI5(DMA1);
         //
+        lthread_launch(&spi_tx_buffer.dt_lth);
     }
     return IRQ_HANDLED;
 }
@@ -118,6 +162,7 @@ static irq_return_t dma_rx_irq_handler(unsigned int irq_nr, void *data)
     {
         LL_DMA_ClearFlag_GI4(DMA1);
         // spi2MLine_TransmissionEndHandle();
+        lthread_launch(&spi_rx_buffer.dt_lth);
     }
     return IRQ_HANDLED;
 }
