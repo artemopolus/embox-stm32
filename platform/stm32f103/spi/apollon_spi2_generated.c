@@ -26,19 +26,18 @@ static int apollon_spi2_init(void)
 
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
     /**SPI2 GPIO Configuration
-  PB12   ------> SPI2_NSS
   PB13   ------> SPI2_SCK
   PB14   ------> SPI2_MISO
   PB15   ------> SPI2_MOSI
   */
-    GPIO_InitStruct.Pin = LL_GPIO_PIN_12 | LL_GPIO_PIN_14;
+    GPIO_InitStruct.Pin = LL_GPIO_PIN_13 | LL_GPIO_PIN_15;
+    GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
+    LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = LL_GPIO_PIN_14;
     GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
     GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-    LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = LL_GPIO_PIN_13 | LL_GPIO_PIN_15;
-    GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
     LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* SPI2 DMA Init */
@@ -73,6 +72,9 @@ static int apollon_spi2_init(void)
 
     LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_5, LL_DMA_MDATAALIGN_BYTE);
 
+    /* SPI2 interrupt Init */
+    // NVIC_SetPriority(SPI2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
+    // NVIC_EnableIRQ(SPI2_IRQn);
 
     SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
     SPI_InitStruct.Mode = LL_SPI_MODE_SLAVE;
@@ -92,13 +94,19 @@ static int apollon_spi2_init(void)
 
     res |= irq_attach(15, dma_tx_irq_handler, 0, NULL, "tim_irq_handler");
     res &= irq_attach(14, dma_rx_irq_handler, 0, NULL, "tim_irq_handler");
+
+    LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_INPUT);
+
+    LL_SPI_Enable(SPI2);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
     return 0;
 }
 static irq_return_t dma_tx_irq_handler(unsigned int irq_nr, void *data)
 {
-    if(LL_DMA_IsActiveFlag_TC5(DMA1) != RESET)
-	{
-		LL_DMA_ClearFlag_GI5(DMA1);
+    if (LL_DMA_IsActiveFlag_TC5(DMA1) != RESET)
+    {
+        LL_DMA_ClearFlag_GI5(DMA1);
         //
     }
     return IRQ_HANDLED;
@@ -106,11 +114,11 @@ static irq_return_t dma_tx_irq_handler(unsigned int irq_nr, void *data)
 STATIC_IRQ_ATTACH(15, dma_tx_irq_handler, NULL);
 static irq_return_t dma_rx_irq_handler(unsigned int irq_nr, void *data)
 {
-    if(LL_DMA_IsActiveFlag_TC4(DMA1) != RESET)
-	{
-		LL_DMA_ClearFlag_GI4(DMA1);
-		// spi2MLine_TransmissionEndHandle();
-	}
+    if (LL_DMA_IsActiveFlag_TC4(DMA1) != RESET)
+    {
+        LL_DMA_ClearFlag_GI4(DMA1);
+        // spi2MLine_TransmissionEndHandle();
+    }
     return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(14, dma_rx_irq_handler, NULL);

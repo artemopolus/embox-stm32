@@ -6,4 +6,10 @@ module base{
 	source "apollon_tim_generated.h"
 	depends embox.kernel.lthread.lthread
 }
-
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module tim3{
+	source "auto_tim_generated.c"
+	@IncludeExport(path="tim")
+	source "auto_tim_generated.h"
+	depends embox.kernel.lthread.lthread
+}
