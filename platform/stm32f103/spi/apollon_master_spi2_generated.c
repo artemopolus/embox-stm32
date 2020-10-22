@@ -55,10 +55,10 @@ static int apollon_master_spi2_init(void)
     SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
     SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
     SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
-    SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
-    SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
+    SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
+    SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
     SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
+    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
     SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
     SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
     SPI_InitStruct.CRCPoly = 10;
@@ -78,7 +78,7 @@ uint8_t apollon_master_spi2_transmit_array(uint8_t *data, uint8_t datacount)
     for (uint8_t i = 0; i < datacount; i++)
     {
         /* последовательно отправляем данные */
-        LL_SPI_TransmitData8(SPI1, data[i]);
+        LL_SPI_TransmitData8(SPI2, data[i]);
         while (!LL_SPI_IsActiveFlag_TXE(SPI2));
     }
     while (LL_SPI_IsActiveFlag_BSY(SPI2));

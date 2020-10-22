@@ -16,7 +16,7 @@
 
 // uint8_t aRxBuffer[sizeof(aTxBuffer)];
 
-#define RXTX_BUFFER_SIZE 10
+#define RXTX_BUFFER_SIZE 5
 
 typedef struct{
     uint8_t dt_buffer[RXTX_BUFFER_SIZE];
@@ -56,6 +56,8 @@ static int apollon_spi2_init(void)
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI2);
 
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
+
+    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
     /**SPI2 GPIO Configuration
   PB13   ------> SPI2_SCK
   PB14   ------> SPI2_MISO
@@ -118,33 +120,42 @@ static int apollon_spi2_init(void)
     // NVIC_SetPriority(SPI2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
     // NVIC_EnableIRQ(SPI2_IRQn);
 
+    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_5);
+    LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_5);
+
     SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
     SPI_InitStruct.Mode = LL_SPI_MODE_SLAVE;
     SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
-    SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
-    SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
+    SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
+    SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
     SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
+    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
     SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
     SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
     SPI_InitStruct.CRCPoly = 10;
     LL_SPI_Init(SPI2, &SPI_InitStruct);
 
-    uint8_t res = 0;
+    int res = 0;
     //    DMA1_Channel4_IRQ  DMA1_Channel4_IRQn          = 14,     /*!< DMA1 Channel 4 global Interrupt                      */
     //  DMA1_Channel5_IRQn          = 15,     /*!< DMA1 Channel 5 global Interrupt  n
 
-    res |= irq_attach(15, dma_tx_irq_handler, 0, NULL, "tim_irq_handler");
-    res &= irq_attach(14, dma_rx_irq_handler, 0, NULL, "tim_irq_handler");
+    res = irq_attach(15, dma_tx_irq_handler, 0, NULL, "tim_irq_handler");
+    res = irq_attach(14, dma_rx_irq_handler, 0, NULL, "tim_irq_handler");
 
     LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_INPUT);
     lthread_init(&spi_tx_buffer.dt_lth, &spi2_transmit_handler);
     lthread_init(&spi_rx_buffer.dt_lth, &spi2_receive_handler);
 
+    LL_SPI_EnableDMAReq_RX(SPI2);
+    LL_SPI_EnableDMAReq_TX(SPI2);
+
     LL_SPI_Enable(SPI2);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
-    return 0;
+    res = 0;
+    return res;
 }
 static irq_return_t dma_tx_irq_handler(unsigned int irq_nr, void *data)
 {
