@@ -7,7 +7,7 @@
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_gpio.h"
 
-#include "apollon_spi2_generated.h"
+#include "spi2_fullduplex_slave.h"
 
 #include <embox/unit.h>
 #include <kernel/irq.h>
@@ -17,6 +17,9 @@
 // uint8_t aRxBuffer[sizeof(aTxBuffer)];
 
 #define RXTX_BUFFER_SIZE 5
+#define CS_PORT GPIOB
+#define CS_PIN LL_GPIO_PIN_12
+
 
 typedef struct{
     uint8_t dt_buffer[RXTX_BUFFER_SIZE];
@@ -144,7 +147,8 @@ static int apollon_spi2_init(void)
     res = irq_attach(15, dma_tx_irq_handler, 0, NULL, "tim_irq_handler");
     res = irq_attach(14, dma_rx_irq_handler, 0, NULL, "tim_irq_handler");
 
-    LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_INPUT);
+    // LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_INPUT);
+    LL_GPIO_SetPinMode(CS_PORT, CS_PIN, LL_GPIO_MODE_INPUT);
     lthread_init(&spi_tx_buffer.dt_lth, &spi2_transmit_handler);
     lthread_init(&spi_rx_buffer.dt_lth, &spi2_receive_handler);
 
