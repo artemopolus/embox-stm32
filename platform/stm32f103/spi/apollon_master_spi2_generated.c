@@ -6,7 +6,7 @@
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_gpio.h"
 
-#include "apollo_master_spi2_generated.h"
+#include "apollon_master_spi2_generated.h"
 
 #define CS_PORT GPIOB
 #define CS_PIN LL_GPIO_PIN_12
@@ -65,6 +65,7 @@ static int apollon_master_spi2_init(void)
     LL_SPI_Init(SPI2, &SPI_InitStruct);
     LL_SPI_Enable(SPI2);
     apollon_master_spi2_disable();
+    return 0;
 }
 uint8_t apollon_master_spi2_transmit_receive(uint8_t address)
 {

@@ -19,5 +19,5 @@ int main(int argc, char *argv[]) {
     apollon_master_spi2_transmit_array(data, datacount);
     
     printf("Done\n");
-
+    return 0;
 }

@@ -1,3 +1,4 @@
+#include <errno.h>
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_ll_dma.h"
 #include "stm32f1xx_ll_spi.h"
@@ -24,11 +25,11 @@ typedef struct{
     struct lthread dt_lth;
 }spi_buffer;
 
-static spi_buffer spi_rx_buffer{
-    .dt_count = RXTX_BUFFER_SIZE;
+static spi_buffer spi_rx_buffer = {
+    .dt_count = RXTX_BUFFER_SIZE,
 };
-static spi_buffer spi_tx_buffer{
-    .dt_count = RXTX_BUFFER_SIZE;
+static spi_buffer spi_tx_buffer = {
+    .dt_count = RXTX_BUFFER_SIZE,
 };
 
 static irq_return_t dma_tx_irq_handler(unsigned int irq_nr, void *data);
