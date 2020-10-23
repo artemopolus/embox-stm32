@@ -37,7 +37,22 @@ static spi_buffer spi_tx_buffer = {
 
 static irq_return_t dma_tx_irq_handler(unsigned int irq_nr, void *data);
 static irq_return_t dma_rx_irq_handler(unsigned int irq_nr, void *data);
+uint8_t spi2_sl_transmit(uint8_t *data, uint8_t datacount)
+{
+    if (datacount > RXTX_BUFFER_SIZE)
+        return 1;
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
 
+    for (uint8_t i = 0; i < datacount; i++)
+    {
+        /* code */
+        spi_tx_buffer.dt_buffer[i] = data[i];
+    }
+
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, datacount);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
+    return 0;
+}
 static int spi2_receive_handler(struct lthread *self)
 {
     /* обработка полученных данных */
@@ -48,8 +63,8 @@ static int spi2_transmit_handler(struct lthread *self)
     /* действия после отправки данных */
     return 0;
 }
-EMBOX_UNIT_INIT(apollon_spi2_init);
-static int apollon_spi2_init(void)
+EMBOX_UNIT_INIT(spi2_sl_init );
+static int spi2_sl_init(void)
 {
     LL_SPI_InitTypeDef SPI_InitStruct = {0};
 
