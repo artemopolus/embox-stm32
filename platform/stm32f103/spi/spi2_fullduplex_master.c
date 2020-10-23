@@ -13,18 +13,17 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
 
-
 #define RXTX_BUFFER_SIZE 5
 #define CS_PORT GPIOB
 #define CS_PIN LL_GPIO_PIN_12
 
-
-typedef struct{
+typedef struct
+{
     uint8_t dt_buffer[RXTX_BUFFER_SIZE];
     uint8_t dt_count;
     struct mutex dt_mutex;
     struct lthread dt_lth;
-}spi_buffer;
+} spi_buffer;
 
 static spi_buffer spi2_ms_rx_buffer = {
     .dt_count = RXTX_BUFFER_SIZE,
@@ -36,7 +35,7 @@ static spi_buffer spi2_ms_tx_buffer = {
 static irq_return_t spi2_ms_dma_tx_irq_handler(unsigned int irq_nr, void *data);
 static irq_return_t spi2_ms_dma_rx_irq_handler(unsigned int irq_nr, void *data);
 
-uint8_t spi2_ms_transmit(uint8_t * data, uint8_t datacount)
+uint8_t spi2_ms_transmit(uint8_t *data, uint8_t datacount)
 {
     if (datacount > RXTX_BUFFER_SIZE)
         return 1;
@@ -47,7 +46,7 @@ uint8_t spi2_ms_transmit(uint8_t * data, uint8_t datacount)
         /* code */
         spi2_ms_tx_buffer.dt_buffer[i] = data[i];
     }
-    
+
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, datacount);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
     return 0;
@@ -82,13 +81,13 @@ static int spi2_ms_init(void)
   PB15   ------> SPI2_MOSI
   */
     GPIO_InitStruct.Pin = LL_GPIO_PIN_13 | LL_GPIO_PIN_15;
-    GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
-    LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = LL_GPIO_PIN_14;
     GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
     GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+    LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = LL_GPIO_PIN_14;
+    GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
     LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* SPI2 DMA Init */
@@ -107,11 +106,11 @@ static int spi2_ms_init(void)
     LL_DMA_SetPeriphSize(DMA1, LL_DMA_CHANNEL_4, LL_DMA_PDATAALIGN_BYTE);
 
     LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_4, LL_DMA_MDATAALIGN_BYTE);
-    
+
     LL_DMA_ConfigAddresses(DMA1,
-                         LL_DMA_CHANNEL_4,
-                         LL_SPI_DMA_GetRegAddr(SPI2), (uint32_t)spi2_ms_rx_buffer.dt_buffer,
-                         LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_4));
+                           LL_DMA_CHANNEL_4,
+                           LL_SPI_DMA_GetRegAddr(SPI2), (uint32_t)spi2_ms_rx_buffer.dt_buffer,
+                           LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_4));
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, spi2_ms_rx_buffer.dt_count);
 
     /* SPI2_TX Init */
@@ -129,10 +128,10 @@ static int spi2_ms_init(void)
 
     LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_5, LL_DMA_MDATAALIGN_BYTE);
 
-    LL_DMA_ConfigAddresses(DMA1, 
-                        LL_DMA_CHANNEL_5, (uint32_t)spi2_ms_tx_buffer.dt_buffer, 
-                        LL_SPI_DMA_GetRegAddr(SPI2),
-                        LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5));
+    LL_DMA_ConfigAddresses(DMA1,
+                           LL_DMA_CHANNEL_5, (uint32_t)spi2_ms_tx_buffer.dt_buffer,
+                           LL_SPI_DMA_GetRegAddr(SPI2),
+                           LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5));
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, spi2_ms_tx_buffer.dt_count);
     /* SPI2 interrupt Init */
     // NVIC_SetPriority(SPI2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
