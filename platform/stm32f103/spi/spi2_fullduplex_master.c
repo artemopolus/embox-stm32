@@ -2,6 +2,7 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_ll_dma.h"
 #include "stm32f1xx_ll_spi.h"
+#include "stm32f1xx_ll_bus.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_gpio.h"
 
@@ -143,7 +144,7 @@ static int spi2_ms_init(void)
     LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_5);
 
     SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
-    SPI_InitStruct.Mode = LL_SPI_MODE_SLAVE;
+    SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
     SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
     SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
     SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
@@ -169,7 +170,7 @@ static int spi2_ms_init(void)
 
     LL_SPI_Enable(SPI2);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
+    // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
     res = 0;
     return res;
 }

@@ -20,4 +20,6 @@ module spi2_fullduplex_master{
 	source "spi2_fullduplex_master.c"
 	@IncludeExport(path="spi")
 	source "spi2_fullduplex_master.h"
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
 }
