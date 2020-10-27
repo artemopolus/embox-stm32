@@ -30,6 +30,11 @@
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart6_irq)
 static_assert(USART6_IRQ == USART6_IRQn);
 
+
+#define UART4_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, uart4_irq)
+static_assert(UART4_IRQ == UART4_IRQn);
+
 #define USART2_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart2_irq)
 static_assert(USART2_IRQ == USART2_IRQn);
@@ -43,6 +48,12 @@ static_assert(USART1_IRQ == USART1_IRQn);
 #define USARTx                           USART6
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      USART6_IRQ
+
+#elif MODOPS_USARTX == 4
+#define USARTx                           UART4
+/* Definition for USARTx's NVIC */
+#define USARTx_IRQn                      UART4_IRQ
+
 
 #elif MODOPS_USARTX == 2
 #define USARTx                           USART2
@@ -88,6 +99,17 @@ static_assert(USART1_IRQ == USART1_IRQn);
 #define USART2_RX_PIN                    GPIO_PIN_3
 #define USART2_RX_GPIO_PORT              GPIOA
 #define USART2_RX_AF                     GPIO_AF7_USART2
+
+#define STM32_UART4_ENABLED				1
+#define UART4_RX_GPIO_CLK_ENABLE		__HAL_RCC_GPIOA_CLK_ENABLE()
+#define UART4_TX_GPIO_CLK_ENABLE		__HAL_RCC_GPIOA_CLK_ENABLE()
+#define UART4_TX_PIN					GPIO_PIN_0
+#define UART4_TX_GPIO_PORT				GPIOA
+#define UART4_TX_AF						GPIO_AF8_UART4
+#define UART4_RX_PIN					GPIO_PIN_1
+#define UART4_RX_GPIO_PORT				GPIOA
+#define UART4_RX_AF						GPIO_AF8_UART4
+
 
 #define STM32_USART6_ENABLED             1
 #define USART6_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
