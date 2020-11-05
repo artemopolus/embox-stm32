@@ -170,18 +170,18 @@ static int SPI2_FULL_DMA_rx_handler(struct lthread *self)
 }
 uint8_t SPI2_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)
 {
-    if (datacount > SPI_FULL_DMA_RXTX_BUFFER_SIZE)
+    if (datacount > SPI2_FULL_DMA_RXTX_BUFFER_SIZE)
         return 1;
-    LL_DMA_DisableChannel(DMA1, LL_DMA_Channel_5);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
 
     for (uint8_t i = 0; i < datacount; i++)
     {
         /* копирование данных */
-        SPI_FULL_DMA_tx_buffer.dt_buffer[i] = data[i];
+        SPI2_FULL_DMA_tx_buffer.dt_buffer[i] = data[i];
     }
 
-    LL_DMA_SetDataLength(DMA1, LL_DMA_Channel_5, datacount);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_Channel_5);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, datacount);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
     return 0;
 }
 uint8_t SPI2_FULL_DMA_receive(uint8_t *data, uint8_t datacount)
@@ -191,8 +191,8 @@ uint8_t SPI2_FULL_DMA_receive(uint8_t *data, uint8_t datacount)
 }
 uint8_t SPI2_FULL_DMA_setdatalength( uint8_t datalength )
 {
-    LL_DMA_DisableChannel(DMA1, LL_DMA_Channel_4);
-    LL_DMA_SetDataLength(DMA1, LL_DMA_Channel_4, datalength);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_Channel_4);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, datalength);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
     return 0;
 }
