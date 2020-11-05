@@ -111,22 +111,22 @@ static int SPI2_FULL_DMA_init(void)
   LL_SPI_Init(SPI2, &SPI_InitStruct);
 
     LL_DMA_ConfigAddresses(DMA1,
-                           LL_DMA_Channel_4,
+                           LL_DMA_CHANNEL_4,
                            LL_SPI_DMA_GetRegAddr(SPI2), (uint32_t)SPI2_FULL_DMA_rx_buffer.dt_buffer,
-                           LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_Channel_4));
-    LL_DMA_SetDataLength(DMA1, LL_DMA_Channel_4, SPI2_FULL_DMA_rx_buffer.dt_count);
+                           LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_4));
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_rx_buffer.dt_count);
 
     LL_DMA_ConfigAddresses(DMA1,
-                           LL_DMA_Channel_5, (uint32_t)SPI2_FULL_DMA_tx_buffer.dt_buffer,
+                           LL_DMA_CHANNEL_5, (uint32_t)SPI2_FULL_DMA_tx_buffer.dt_buffer,
                            LL_SPI_DMA_GetRegAddr(SPI2),
-                           LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_Channel_5));
-    LL_DMA_SetDataLength(DMA1, LL_DMA_Channel_5, SPI2_FULL_DMA_tx_buffer.dt_count);
+                           LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5));
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_tx_buffer.dt_count);
 
 
-    LL_DMA_EnableIT_TC(DMA1, LL_DMA_Channel_4);
-    LL_DMA_EnableIT_TE(DMA1, LL_DMA_Channel_4);
-    LL_DMA_EnableIT_TC(DMA1, LL_DMA_Channel_5);
-    LL_DMA_EnableIT_TE(DMA1, LL_DMA_Channel_5);
+    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_5);
+    LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_5);
 
     irq_attach(15, SPI2_FULL_DMA_tx_irq_handler, 0, NULL, "SPI2_FULL_DMA_irq_handler");
     irq_attach(14, SPI2_FULL_DMA_rx_irq_handler, 0, NULL, "SPI2_FULL_DMA_irq_handler");
@@ -137,7 +137,7 @@ static int SPI2_FULL_DMA_init(void)
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_SPI_EnableDMAReq_TX(SPI2);
     LL_SPI_Enable(SPI2);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_Channel_4);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
 
 }
 static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data)
