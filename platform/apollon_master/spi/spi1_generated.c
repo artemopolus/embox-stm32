@@ -50,6 +50,7 @@ static int SPI1_HALF_BASE_init(void)
 
     LL_SPI_Enable(SPI1);
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
+    return 0;
 }
 uint8_t SPI1_HALF_BASE_get_option(const uint8_t address)
 {
