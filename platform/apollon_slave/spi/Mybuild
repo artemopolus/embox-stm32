@@ -10,4 +10,7 @@ module spi2{
 	source "spi2_generated.c"
 	@IncludeExport(path="spi")
 	source "spi2_generated.h"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
 }
