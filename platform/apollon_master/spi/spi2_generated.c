@@ -14,6 +14,7 @@
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_gpio.h"
 #include "spi2_generated.h"
+#include <errno.h>
 #include <embox/unit.h>
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
@@ -21,7 +22,7 @@
 #define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 5
 typedef struct
 {
-    uint8_t dt_buffer[RXTX_BUFFER_SIZE];
+    uint8_t dt_buffer[SPI2_FULL_DMA_RXTX_BUFFER_SIZE];
     uint8_t dt_count;
     struct mutex dt_mutex;
     struct lthread dt_lth;
