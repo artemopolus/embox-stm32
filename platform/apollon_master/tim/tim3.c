@@ -9,7 +9,7 @@
 #include "system_stm32f1xx.h"
 #include "stm32f1xx.h"
 
-#include "auto_tim_generated.h"
+#include "tim3.h"
 #include <kernel/lthread/lthread.h>
 
 #include <embox/unit.h>
