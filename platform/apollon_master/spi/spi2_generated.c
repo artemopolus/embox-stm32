@@ -137,7 +137,7 @@ static int SPI2_FULL_DMA_init(void)
     LL_DMA_EnableChannel(DMA1, LL_DMA_Channel_4);
 
 }
-void SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data)
+static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data)
 {
     if (LL_DMA_IsActiveFlag_TC5(DMA1) != RESET)
     {
@@ -147,7 +147,7 @@ void SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data)
     return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(15, SPI2_FULL_DMA_tx_irq_handler, NULL);
-void SPI2_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data)
+static irq_return_t SPI2_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data)
 {
     if (LL_DMA_IsActiveFlag_TC4(DMA1) != RESET)
     {
