@@ -16,7 +16,6 @@
 #include "spi2_generated.h"
 #include <errno.h>
 #include <embox/unit.h>
-#include <kernel/printk.h>
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
