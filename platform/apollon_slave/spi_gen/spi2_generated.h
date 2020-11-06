@@ -4,5 +4,4 @@
 extern uint8_t SPI2_FULL_DMA_transmit(uint8_t *data, uint8_t datacount);
 extern uint8_t SPI2_FULL_DMA_receive(uint8_t *data, uint8_t datacount);
 extern uint8_t SPI2_FULL_DMA_setdatalength( uint8_t datalength );
-extern uint8_t SPI2_FULL_DMA_wait_rx_data(void)
 #endif //SPI2_GENERATED_H

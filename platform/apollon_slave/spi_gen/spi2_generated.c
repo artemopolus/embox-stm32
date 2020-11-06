@@ -59,13 +59,13 @@ static int SPI2_FULL_DMA_init(void)
   PB15   ------> SPI2_MOSI
   */
   GPIO_InitStruct.Pin = LL_GPIO_PIN_13|LL_GPIO_PIN_15;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = LL_GPIO_PIN_14;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* SPI2 DMA Init */
@@ -100,8 +100,10 @@ static int SPI2_FULL_DMA_init(void)
 
   LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_5, LL_DMA_MDATAALIGN_BYTE);
 
+  /* SPI2 interrupt Init */
+
   SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
-  SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
+  SPI_InitStruct.Mode = LL_SPI_MODE_SLAVE;
   SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
@@ -175,7 +177,6 @@ static int SPI2_FULL_DMA_rx_handler(struct lthread *self)
     }
     SPI2_FULL_DMA_rx_buffer.is_full = 1;
 	mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
-    return 0;
 }
 uint8_t SPI2_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)
 {
@@ -209,16 +210,6 @@ uint8_t SPI2_FULL_DMA_setdatalength( uint8_t datalength )
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, datalength);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
     return 0;
-}
-uint8_t SPI2_FULL_DMA_wait_rx_data(void)
-{
-    uint8_t result_value = 0;
-	if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
-        return result_value;
-    }
-    result_value = SPI2_FULL_DMA_rx_buffer.dt_mutex;
-	mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
-    return result_value;
 }
 uint8_t SPI2_FULL_DMA_wait_rx_data(void)
 {
