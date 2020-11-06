@@ -1,4 +1,4 @@
-package apollon_master.cmd
+package apollon_slave.cmd
 
 @AutoCmd
 @Cmd(name="test_spi_dma_send", help=" Test for sending test array throw spi dma ")
@@ -9,6 +9,6 @@ module test_spi_dma_send {
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 
-	depends apollon_master.spi_gen.spi2
+	depends apollon_slave.spi_gen.spi2
 	depends third_party.bsp.stmf1cube.cube
 }

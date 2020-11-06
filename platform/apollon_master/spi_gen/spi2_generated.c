@@ -31,11 +31,11 @@ typedef struct
 
 static SPI2_FULL_DMA_buffer SPI2_FULL_DMA_rx_buffer = {
     .dt_count = SPI2_FULL_DMA_RXTX_BUFFER_SIZE,
-    .is_full = 0;
+    .is_full = 0,
 };
 static SPI2_FULL_DMA_buffer SPI2_FULL_DMA_tx_buffer = {
     .dt_count = SPI2_FULL_DMA_RXTX_BUFFER_SIZE,
-    .is_full = 0;
+    .is_full = 0,
 };
 static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data);
 static irq_return_t SPI2_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data);
@@ -196,11 +196,11 @@ uint8_t SPI2_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)
 uint8_t SPI2_FULL_DMA_receive(uint8_t *data, uint8_t datacount)
 {
     /* выполняем копирование из памяти */
-	if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
-        return 0;
-    }
-    SPI2_FULL_DMA_rx_buffer.is_full = 0;
-	mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
+	// if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
+    //     return 0;
+    // }
+    // SPI2_FULL_DMA_rx_buffer.is_full = 0;
+	// mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
     return 0;
 }
 uint8_t SPI2_FULL_DMA_setdatalength( uint8_t datalength )
@@ -210,23 +210,13 @@ uint8_t SPI2_FULL_DMA_setdatalength( uint8_t datalength )
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
     return 0;
 }
-uint8_t SPI2_FULL_DMA_wait_rx_data(void)
+struct mutex SPI2_FULL_DMA_wait_rx_data(void)
 {
-    uint8_t result_value = 0;
-	if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
-        return result_value;
-    }
-    result_value = SPI2_FULL_DMA_rx_buffer.dt_mutex;
-	mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
-    return result_value;
+	// if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
+    //     return result_value;
+    // }
+    // result_value = SPI2_FULL_DMA_rx_buffer.dt_mutex;
+	// mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
+    return SPI2_FULL_DMA_rx_buffer.dt_mutex;
 }
-uint8_t SPI2_FULL_DMA_wait_rx_data(void)
-{
-    uint8_t result_value = 0;
-	if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
-        return result_value;
-    }
-    result_value = SPI2_FULL_DMA_rx_buffer.dt_mutex;
-	mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
-    return result_value;
-}
+
