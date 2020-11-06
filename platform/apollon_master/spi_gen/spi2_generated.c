@@ -212,11 +212,9 @@ uint8_t SPI2_FULL_DMA_setdatalength( uint8_t datalength )
 }
 struct mutex SPI2_FULL_DMA_wait_rx_data(void)
 {
-	// if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
-    //     return result_value;
-    // }
-    // result_value = SPI2_FULL_DMA_rx_buffer.dt_mutex;
-	// mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
     return SPI2_FULL_DMA_rx_buffer.dt_mutex;
 }
-
+uint8_t SPI2_FULL_DMA_is_full(void)
+{
+    return SPI2_FULL_DMA_rx_buffer.is_full;
+}

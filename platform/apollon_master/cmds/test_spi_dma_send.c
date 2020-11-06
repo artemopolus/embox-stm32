@@ -11,11 +11,14 @@
 struct lthread WaitingTaskLth;
 
 static int WaitingRun(struct lthread *self) {
+    goto *lthread_resume(self, &&start);
+start:
+    /* инициализация */
     struct mutex trg_m = SPI2_FULL_DMA_wait_rx_data();
-    
+mutex_retry:
     if (mutex_trylock_lthread(self, &trg_m ) == -EAGAIN)
     {
-        return 0;
+        return lthread_yield(&&start, &&mutex_retry);
     }
 	mutex_unlock_lthread(self, &trg_m);
     printf("Receive data: done\n");
