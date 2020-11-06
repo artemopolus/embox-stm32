@@ -20,9 +20,17 @@ mutex_retry:
     {
         return lthread_yield(&&start, &&mutex_retry);
     }
-	mutex_unlock_lthread(self, &trg_m);
-    printf("Receive data: done\n");
-    return 0;
+    if (SPI2_FULL_DMA_is_full())
+    {
+    	mutex_unlock_lthread(self, &trg_m);
+        printf("Receive data: done\n");
+        return 0;
+    }
+    else
+    {
+        return lthread_yield(&&start, &&mutex_retry);
+    }
+    
 }
 
 int main(int argc, char *argv[]) {
