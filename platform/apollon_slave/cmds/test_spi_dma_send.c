@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "spi/spi2_generated.h"
+#include "spi_gen/spi2_generated.h"
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/schedee_priority.h>
