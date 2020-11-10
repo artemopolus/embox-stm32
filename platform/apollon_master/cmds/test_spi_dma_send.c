@@ -40,6 +40,8 @@
 int main(int argc, char *argv[]) {
 //	lthread_init(&WaitingTaskLth, WaitingRun);
 
+    printf("Start Master Full Duplex SPI\n");
+
     uint8_t data[] = {1, 17, 22, 4,55};
     size_t datacount = sizeof(data);
     printf("Ready to send spi dma test %d array!", datacount);

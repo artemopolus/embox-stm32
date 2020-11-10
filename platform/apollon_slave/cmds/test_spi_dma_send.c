@@ -38,6 +38,7 @@ mutex_retry:
 }
 
 int main(int argc, char *argv[]) {
+    printf("Start Master Full Duplex SPI\n");
     printf("Ready to receive data!\n");
 	lthread_init(&WaitingTaskLth, WaitingRun);
 
