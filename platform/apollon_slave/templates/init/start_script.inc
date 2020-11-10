@@ -1,1 +1,2 @@
+"help",
 "report_init"
