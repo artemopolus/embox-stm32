@@ -42,23 +42,10 @@ int main(int argc, char *argv[]) {
     printf("Ready to receive data!\n");
 	lthread_init(&WaitingTaskLth, WaitingRun);
 
-    // uint8_t data[] = {1, 17, 22, 4,55};
-    // size_t datacount = sizeof(data);
-    // printf("Ready to send spi dma test %d array!", datacount);
-    // printf("Sending data:\n");
-    // for (size_t i = 0; i < datacount; i++)
-    // {
-    //     /* code */
-    //     printf("dec= %d ,hex= %#04x,",data[i], data[i]);
-    // }
-    // printf("\n");
+    while(1)
+    {
 
-    // sleep(1);
-    // // SPI2_FULL_DMA_transmit(data, datacount);
-
-
-    // printf("Transmit: done\n");
-
+    }
 
     return 0;
 }
