@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     printf("\n");
 
     sleep(1);
-    // SPI2_FULL_DMA_transmit(data, datacount);
+    SPI2_FULL_DMA_transmit(data, datacount);
 
 
     printf("Transmit: done\n");
