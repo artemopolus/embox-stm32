@@ -103,10 +103,10 @@ static int SPI2_FULL_DMA_init(void)
   SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
   SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
   SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
-  SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
-  SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
+  SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
+  SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 10;
@@ -146,7 +146,7 @@ static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data
 {
     if (LL_DMA_IsActiveFlag_TC5(DMA1) != RESET)
     {
-        LL_DMA_IsActiveFlag_TC5(DMA1);
+        LL_DMA_ClearFlag_GI5(DMA1);
         lthread_launch(&SPI2_FULL_DMA_tx_buffer.dt_lth);
     }
     return IRQ_HANDLED;
@@ -156,8 +156,8 @@ static irq_return_t SPI2_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data
 {
     if (LL_DMA_IsActiveFlag_TC4(DMA1) != RESET)
     {
-        LL_DMA_IsActiveFlag_TC4(DMA1);
-        lthread_launch(&SPI2_FULL_DMA_rx_buffer.dt_lth);
+        LL_DMA_ClearFlag_GI4(DMA1);
+        // lthread_launch(&SPI2_FULL_DMA_rx_buffer.dt_lth);
     }
     return IRQ_HANDLED;
 }
