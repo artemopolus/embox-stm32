@@ -12,3 +12,8 @@ module test_spi_dma_send {
 	depends apollon_master.spi_gen.spi2
 	depends third_party.bsp.stmf1cube.cube
 }
+@AutoCmd
+@Cmd(name="report_init", help=" Test ")
+module report_init {
+	source "report_init.c"
+}
