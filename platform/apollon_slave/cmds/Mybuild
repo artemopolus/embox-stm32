@@ -18,4 +18,6 @@ module test_spi_dma_send {
 @Cmd(name="report_init", help=" Test ")
 module report_init {
 	source "report_init.c"
+	@IncludeExport(path="cmd")
+	source "base_project_defs.h"
 }
