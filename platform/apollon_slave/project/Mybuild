@@ -1,0 +1,6 @@
+package apollon_slave.project
+
+module defs {
+	@IncludeExport(path="project")
+	source "base_project_defs.h" 
+}
