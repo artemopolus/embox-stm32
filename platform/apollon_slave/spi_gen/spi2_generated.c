@@ -31,6 +31,8 @@ typedef struct
     uint8_t is_full;
 } SPI2_FULL_DMA_buffer;
 
+static uint8_t PtExactoStorage = 0xFF;
+
 static SPI2_FULL_DMA_buffer SPI2_FULL_DMA_rx_buffer = {
     .dt_count = SPI2_FULL_DMA_RXTX_BUFFER_SIZE,
     .is_full = 0,
@@ -140,6 +142,8 @@ static int SPI2_FULL_DMA_init(void)
     lthread_init(&SPI2_FULL_DMA_tx_buffer.dt_lth, &SPI2_FULL_DMA_tx_handler);
     lthread_init(&SPI2_FULL_DMA_rx_buffer.dt_lth, &SPI2_FULL_DMA_rx_handler);
 
+    PtExactoStorage = addAppenderExactoDataStorage();
+
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_SPI_EnableDMAReq_TX(SPI2);
     LL_SPI_Enable(SPI2);
@@ -179,7 +183,7 @@ static int SPI2_FULL_DMA_rx_handler(struct lthread *self)
     // }
     // SPI2_FULL_DMA_rx_buffer.is_full = 1;
 	// mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
-    appendDataToExactoDataStorage(SPI2_FULL_DMA_rx_buffer.dt_buffer, SPI2_FULL_DMA_rx_buffer.dt_count);
+    appendDataToExactoDataStorage(PtExactoStorage, SPI2_FULL_DMA_rx_buffer.dt_buffer, SPI2_FULL_DMA_rx_buffer.dt_count);
     return 0;
 }
 uint8_t SPI2_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)
