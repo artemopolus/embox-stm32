@@ -6,6 +6,7 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
 
+#define CHECK_ID    if (id >= MAIL_ID_CNT_EXACTO_COMMANDER )    return 1;
 
 typedef struct{
     uint8_t isEmpty;
@@ -16,21 +17,18 @@ static exactodatastorage ExDtStorage = {
     .isEmpty = 0,
 };
 
-
+static uint8_t CntIDMail4Thread = 0;
 
 typedef struct{
     struct lthread thread;
     uint8_t data[MAIL_SZ_EXACTO_COMMANDER];
     uint8_t datalen;
     uint8_t data2copylen;
+    uint8_t result; // 0 - not used 1 - waiting 2 - working
 }mail4lthread;
 
-static mail4lthread AppenderData = {
-    .datalen = 0,
-};
-static mail4lthread GetterData = {
-    .datalen = 0,
-};
+static mail4lthread AppenderData[MAIL_ID_CNT_EXACTO_COMMANDER];
+static mail4lthread GetterData[GETT_ID_CNT_EXACTO_COMMANDER];
 
 static int appenderData_handler(struct lthread *self)
 {
@@ -44,6 +42,9 @@ mutex_retry:
         return lthread_yield(&&start, &&mutex_retry);
     }
     // do something
+    struct mail4thread *_trg_lthread;
+    _trg_lthread = self;
+    _trg_lthread->result = 0;
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
     return 0;
 }
@@ -68,23 +69,55 @@ EMBOX_UNIT_INIT(initExactoDataStorage);
 static int initExactoDataStorage(void)
 {
     mutex_init_schedee(&ExDtStorage.dtmutex);
-    lthread_init(&AppenderData.thread, &appenderData_handler);
+    for (uint8_t i = 0; i < MAIL_ID_CNT_EXACTO_COMMANDER; i++)
+    {
+        AppenderData[i].datalen = 0;
+        AppenderData[i].data2copylen = 0;
+        AppenderData[i].result = 0xFF;
+        lthread_init(&AppenderData[i].thread, &appenderData_handler);
+    }
+    for (uint8_t i = 0; i < GETT_ID_CNT_EXACTO_COMMANDER; i++)
+    {
+        GetterData[i].datalen = 0;
+        GetterData[i].data2copylen = 0;
+        GetterData[i].result = 0xFF;
+        lthread_init(&GetterData[i].thread, &getterData_handler);
+
+    }
+    
     lthread_init(&GetterData.thread, &getterData_handler);
     return 0;
 }
-
-uint8_t appendDataToExactoDataStorage(uint8_t * data, uint16_t datacount)
+/* главный косяк тут в том, что запросить ID это необязательное мероприятие. Его можно миновать и получить жесть в работе */
+uint8_t addAppenderExactoDataStorage(void)
 {
+    if (CntIDMail4Thread >= MAIL_ID_CNT_EXACTO_COMMANDER)
+        return 0xFF;
+    uint8_t res = CntIDMail4Thread;
+    CntIDMail4Thread++;
+    return res;
+}
+uint8_t appendDataToExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount);
+{
+    CHECK_ID
     // copy here in storage
-    lthread_launch(&AppenderData.thread);
+    AppenderData[id].result = 0xFF;
+    lthread_launch(&AppenderData[id].thread);
     return 0;
 }
-uint8_t getDataFromExactoDataStorage(uint8_t * data, uint8_t datacount)
+uint8_t getDataFromExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount);
 {
+    CHECK_ID
     return 0;
 }
-uint8_t checkExactoDataStorage(void)
+uint8_t checkExactoDataStorage( const uint8_t id);
 {
+    CHECK_ID
     uint8_t res = 0;
+    GetterData[id].result = 0xFF;
+    GetterData[id].data2copylen = 0;
+    lthread_launch(&GetterData[id].thread);
+    lthread_join(&GetterData[id].thread);
+    res = GetterData[id].result;
     return res;
 }
