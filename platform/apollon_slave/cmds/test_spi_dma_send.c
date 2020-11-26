@@ -5,7 +5,22 @@
   
 #include <stdint.h>
 #include "exacto_commander/exacto_data_storage.h"
+#include <kernel/thread.h>
 
+
+static struct thread *MainThread;
+
+static void * mainThreadRun(void *arg) {
+    printf("Ready to receive data!\n");
+    uint8_t _pt_main_thread = addAppenderExactoDataStorage();
+    while(!checkExactoDataStorage(_pt_main_thread))
+    {
+        sleep(1);
+    }
+    printf("Receive data: done\n");
+
+    return 0;
+}
 // #include "spi_gen/spi2_generated.h"
 // #include <kernel/lthread/lthread.h>
 // // #include <kernel/time/ktime.h>
@@ -40,15 +55,13 @@
 // }
 
 int main(int argc, char *argv[]) {
-    printf("Start Master Full Duplex SPI\n");
-    printf("Ready to receive data!\n");
+    printf("Start Slave Full Duplex SPI\n");
+	MainThread = thread_create(THREAD_FLAG_SUSPENDED, mainThreadRun, NULL);
 
-    while(!checkExactoDataStorage())
-    {
-        sleep(1);
-    }
-    printf("Receive data: done\n");
+    thread_launch(MainThread);
+    thread_join(MainThread, NULL);
 
+    printf("Programm reach end\n");
     return 0;
 }
 
