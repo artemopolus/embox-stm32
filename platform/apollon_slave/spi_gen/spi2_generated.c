@@ -19,6 +19,8 @@
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
+#include "exacto_commander/exacto_data_storage.h"
+
 #define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 5
 typedef struct
 {
@@ -172,11 +174,12 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
 static int SPI2_FULL_DMA_rx_handler(struct lthread *self)
 {
     /* do when get data */
-    if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
-        return 0;
-    }
-    SPI2_FULL_DMA_rx_buffer.is_full = 1;
-	mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
+    // if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
+    //     return 0;
+    // }
+    // SPI2_FULL_DMA_rx_buffer.is_full = 1;
+	// mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
+    appendDataToExactoDataStorage(SPI2_FULL_DMA_rx_buffer.dt_buffer, SPI2_FULL_DMA_rx_buffer.dt_count);
     return 0;
 }
 uint8_t SPI2_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)

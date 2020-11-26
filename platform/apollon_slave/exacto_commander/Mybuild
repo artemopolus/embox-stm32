@@ -1,0 +1,15 @@
+package exacto_commander
+
+module data_storage {
+	source "exacto_data_storage.c"
+	@IncludeExport(path="exacto_commander")
+	source "exacto_data_storage.h"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+
+	//project specs
+	depends apollon_slave.project.defs
+	
+}
