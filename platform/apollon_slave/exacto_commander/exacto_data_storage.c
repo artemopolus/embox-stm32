@@ -19,7 +19,7 @@ static exactodatastorage ExDtStorage = {
 
 static uint8_t CntIDMail4Thread = 0;
 
-typedef struct{
+typedef struct mail4lthread_t{
     struct lthread thread;
     uint8_t data[MAIL_SZ_EXACTO_COMMANDER];
     uint8_t datalen;
@@ -33,6 +33,7 @@ static mail4lthread GetterData[GETT_ID_CNT_EXACTO_COMMANDER];
 static int appenderData_handler(struct lthread *self)
 {
     goto *lthread_resume(self, &&start);
+    mail4lthread *_trg_lthread;
 start:
 //     /* инициализация */
 //     result = 0;
@@ -42,8 +43,7 @@ mutex_retry:
         return lthread_yield(&&start, &&mutex_retry);
     }
     // do something
-    struct mail4thread *_trg_lthread;
-    _trg_lthread = self;
+    _trg_lthread = (mail4lthread*)&self;
     _trg_lthread->result = 0;
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
     return 0;
@@ -85,7 +85,7 @@ static int initExactoDataStorage(void)
 
     }
     
-    lthread_init(&GetterData.thread, &getterData_handler);
+    // lthread_init(&GetterData.thread, &getterData_handler);
     return 0;
 }
 /* главный косяк тут в том, что запросить ID это необязательное мероприятие. Его можно миновать и получить жесть в работе */
@@ -97,7 +97,7 @@ uint8_t addAppenderExactoDataStorage(void)
     CntIDMail4Thread++;
     return res;
 }
-uint8_t appendDataToExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount);
+uint8_t appendDataToExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount)
 {
     CHECK_ID
     // copy here in storage
@@ -105,12 +105,12 @@ uint8_t appendDataToExactoDataStorage( const uint8_t id, uint8_t * data, const u
     lthread_launch(&AppenderData[id].thread);
     return 0;
 }
-uint8_t getDataFromExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount);
+uint8_t getDataFromExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount)
 {
     CHECK_ID
     return 0;
 }
-uint8_t checkExactoDataStorage( const uint8_t id);
+uint8_t checkExactoDataStorage( const uint8_t id)
 {
     CHECK_ID
     uint8_t res = 0;
