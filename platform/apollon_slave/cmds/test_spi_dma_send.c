@@ -5,61 +5,52 @@
   
 #include <stdint.h>
 #include "exacto_commander/exacto_data_storage.h"
-#include <kernel/thread.h>
+
+static thread_control_t MainThread;
+
+uint8_t MarkerThread = 0;
 
 
-static struct thread *MainThread;
-
-static void * mainThreadRun(void *arg) {
-    printf("Ready to receive data!\n");
-    uint8_t _pt_main_thread = addAppenderExactoDataStorage();
-    while(!checkExactoDataStorage(_pt_main_thread))
+static int waitingRun(struct lthread *self) {
+    thread_control_t * _trg_th;
+    goto *lthread_resume(self, &&start);
+start:
+    /* инициализация */
+    _trg_th = (thread_control_t *)&self;
+mutex_retry:
+    if (mutex_trylock_lthread(self, &_trg_th->mx ) == -EAGAIN)
     {
-        sleep(1);
+        return lthread_yield(&&start, &&mutex_retry);
     }
-    printf("Receive data: done\n");
-
-    return 0;
-}
-// #include "spi_gen/spi2_generated.h"
-// #include <kernel/lthread/lthread.h>
-// // #include <kernel/time/ktime.h>
-// #include <kernel/lthread/sync/mutex.h>
-
-// struct lthread WaitingTaskLth;
-
-// static int WaitingRun(struct lthread *self) {
-//     struct mutex trg_m;
-//     uint8_t result = 0;
-//     goto *lthread_resume(self, &&start);
-// start:
-//     /* инициализация */
-//     result = 0;
-//     trg_m = SPI2_FULL_DMA_wait_rx_data();
-// mutex_retry:
-//     if (mutex_trylock_lthread(self, &trg_m ) == -EAGAIN)
-//     {
-//         return lthread_yield(&&start, &&mutex_retry);
-//     }
-//     if (SPI2_FULL_DMA_is_full())
-//     {
-//     	mutex_unlock_lthread(self, &trg_m);
-//         printf("Receive data: done\n");
-//         return result;
-//     }
-//     else
-//     {
-//         return lthread_yield(&&start, &&mutex_retry);
-//     }
+    if (_trg_th->result == OK)
+    {
+        MarkerThread = 1;
+        mutex_unlock_lthread(self, &_trg_th->mx);
+        return 0;
+    }
+    else
+    {
+        mutex_unlock_lthread(self, &_trg_th->mx);
+        return lthread_yield(&&start, &&mutex_retry);
+    }
     
-// }
+   
+}
 
 int main(int argc, char *argv[]) {
     printf("Start Slave Full Duplex SPI\n");
-	MainThread = thread_create(THREAD_FLAG_SUSPENDED, mainThreadRun, NULL);
+    
+    initThreadExactoDataStorage(&MainThread);
 
-    thread_launch(MainThread);
-    thread_join(MainThread, NULL);
+    lthread_init(&MainThread.base_thread, waitingRun);
+    lthread_launch(&MainThread.base_thread);
+
+    while (!MarkerThread)
+    {
+        checkExactoDataStorage(&MainThread);
+        sleep(1);
+    }
+    
 
     printf("Programm reach end\n");
     return 0;

@@ -21,6 +21,8 @@
 #include <kernel/lthread/sync/mutex.h>
 #include "exacto_commander/exacto_data_storage.h"
 
+static thread_control_t RxThread;
+
 #define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 5
 typedef struct
 {
@@ -31,7 +33,7 @@ typedef struct
     uint8_t is_full;
 } SPI2_FULL_DMA_buffer;
 
-static uint8_t PtExactoStorage = 0xFF;
+// static uint8_t PtExactoStorage = 0xFF;
 
 static SPI2_FULL_DMA_buffer SPI2_FULL_DMA_rx_buffer = {
     .dt_count = SPI2_FULL_DMA_RXTX_BUFFER_SIZE,
@@ -44,7 +46,7 @@ static SPI2_FULL_DMA_buffer SPI2_FULL_DMA_tx_buffer = {
 static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data);
 static irq_return_t SPI2_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data);
 static int SPI2_FULL_DMA_rx_handler(struct lthread *self);
-static int SPI2_FULL_DMA_tx_handler(struct lthread *self);
+// static int SPI2_FULL_DMA_tx_handler(struct lthread *self);
 EMBOX_UNIT_INIT(SPI2_FULL_DMA_init);
 static int SPI2_FULL_DMA_init(void)
 {
@@ -139,10 +141,11 @@ static int SPI2_FULL_DMA_init(void)
     irq_attach(15, SPI2_FULL_DMA_tx_irq_handler, 0, NULL, "SPI2_FULL_DMA_irq_handler");
     irq_attach(14, SPI2_FULL_DMA_rx_irq_handler, 0, NULL, "SPI2_FULL_DMA_irq_handler");
 
-    lthread_init(&SPI2_FULL_DMA_tx_buffer.dt_lth, &SPI2_FULL_DMA_tx_handler);
-    lthread_init(&SPI2_FULL_DMA_rx_buffer.dt_lth, &SPI2_FULL_DMA_rx_handler);
+    // lthread_init(&SPI2_FULL_DMA_tx_buffer.dt_lth, &SPI2_FULL_DMA_tx_handler);
+    // lthread_init(&SPI2_FULL_DMA_rx_buffer.dt_lth, &SPI2_FULL_DMA_rx_handler);
 
-    PtExactoStorage = addAppenderExactoDataStorage();
+    initThreadExactoDataStorage(&RxThread);
+    lthread_init(&RxThread.base_thread, &SPI2_FULL_DMA_rx_handler);
 
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_SPI_EnableDMAReq_TX(SPI2);
@@ -170,20 +173,24 @@ static irq_return_t SPI2_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data
     return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(14, SPI2_FULL_DMA_rx_irq_handler, NULL);
-static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
-{
-    /* do after data sending */
-    return 0;
-}
+// static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
+// {
+//     /* do after data sending */
+//     return 0;
+// }
 static int SPI2_FULL_DMA_rx_handler(struct lthread *self)
 {
-    /* do when get data */
-    // if (mutex_trylock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex) == -EAGAIN) {
-    //     return 0;
-    // }
-    // SPI2_FULL_DMA_rx_buffer.is_full = 1;
-	// mutex_unlock_lthread(self, &SPI2_FULL_DMA_rx_buffer.dt_mutex);
-    appendDataToExactoDataStorage(PtExactoStorage, SPI2_FULL_DMA_rx_buffer.dt_buffer, SPI2_FULL_DMA_rx_buffer.dt_count);
+    goto *lthread_resume(self, &&start);
+start:
+    /* инициализация */
+mutex_retry:
+    if (mutex_trylock_lthread(self, &ExDtStorage.dtmutex ) == -EAGAIN)
+    {
+        return lthread_yield(&&start, &&mutex_retry);
+    }
+    ExDtStorage.isEmpty = 0;
+    mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
+
     return 0;
 }
 uint8_t SPI2_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)

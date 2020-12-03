@@ -12,8 +12,15 @@ typedef enum{
     GET,
     CHECK
 }function_list_t;
+typedef enum{
+    OK = 0,
+    WAIT,
+    UNKNOWN_ERROR,
+    NO_RESULT = 0xFF
+}thread_control_result_t;
 // THREADS
 typedef struct {
+    struct lthread base_thread;
     struct lthread thread;                          // поток исполнения запросов
     struct mutex mx;                             // контрольный мьютекс для контроля окончания потока
     uint8_t databuffer[THREAD_CONTROL_BUFFER_SZ];   // буффер хранения данных
@@ -21,8 +28,14 @@ typedef struct {
     thread_control_result_t result;
     function_list_t fun_type;
 }thread_control_t;
+typedef struct{
+    uint8_t isEmpty;
+    struct mutex dtmutex;
+}exactodatastorage;
+extern exactodatastorage ExDtStorage;
 extern uint8_t appendDataToExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount);
 extern uint8_t getDataFromExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount);
-extern uint8_t checkExactoDataStorage( const uint8_t id);
+extern uint8_t checkExactoDataStorage( thread_control_t * base );
 extern uint8_t addAppenderExactoDataStorage(void);
+extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
 #endif //EXACTO_DATA_STORAGE_H

@@ -3,13 +3,9 @@
 
 #define CHECK_ID_THREAD_CONTROL(ID)    if (ID >= THREAD_CONTROL_CNT )    return 1;
 
-typedef struct{
-    uint8_t isEmpty;
-    struct mutex dtmutex;
-}exactodatastorage;
 // static struct mutex MutexOfExactoDataStorage;
-static exactodatastorage ExDtStorage = {
-    .isEmpty = 0,
+exactodatastorage ExDtStorage = {
+    .isEmpty = 1,
 };
 
 typedef struct{
@@ -20,11 +16,6 @@ typedef struct{
 
 static uint8_t DataControllerIDCnt = 0;
 
-typedef enum{
-    WAIT = 0,
-    UNKNOWN_ERROR,
-    NO_RESULT = 0xFF
-}thread_control_result_t;
 
 
 //LIST OF FUNCTONS
@@ -38,10 +29,7 @@ static thread_control_t DataController[THREAD_CONTROL_CNT];
 
 // LIST OF THREADS
 
-static int operateDataController(struct lthread * self)
-{
-    return 0;
-}
+
 
 static int functionForExDtStorageHandler(struct lthread *self)
 {
@@ -49,6 +37,7 @@ static int functionForExDtStorageHandler(struct lthread *self)
     goto *lthread_resume(self, &&start);
 start:
      /* инициализация */
+    _trg_lthread = (thread_control_t*)&self;
 
 mutex_retry:
     // do       something
@@ -57,23 +46,15 @@ mutex_retry:
         return lthread_yield(&&start, &&mutex_retry);
     }
     //===============================================================
+    _trg_lthread->result = NO_RESULT;
     if (mutex_trylock_lthread(self, &ExDtStorage.dtmutex ) == -EAGAIN)
     {
         return lthread_yield(&&start, &&mutex_retry);
     }
-    _trg_lthread = (thread_control*)&self;
-    _trg_lthread->result = NO_RESULT;
-    switch (_trg_lthread->fun_type)
+
+    if (!ExDtStorage.isEmpty) 
     {
-    case APPEND:
-        /* code */
-        break;
-    case GET:
-        break;
-    case CHECK:
-        break;
-    default:
-        break;
+        _trg_lthread->result = OK;
     }
 
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
@@ -109,14 +90,22 @@ uint8_t appendDataToExactoDataStorage( const uint8_t id, uint8_t * data, const u
 {
     CHECK_ID_THREAD_CONTROL(id)
     // copy here in storage
-    lthread_launch(&DataController[i].thread);
+    lthread_launch(&DataController[id].thread);
     return 0;
 }
 uint8_t getDataFromExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount)
 {
     return 0;
 }
-uint8_t checkExactoDataStorage( const uint8_t id)
+uint8_t checkExactoDataStorage( thread_control_t * base)
 {
-    return res;
+    lthread_launch(&base->thread);
+    return 0;
+}
+uint8_t initThreadExactoDataStorage( thread_control_t * base )
+{
+    mutex_init_schedee(&base->mx);
+    lthread_init(&base->thread, &functionForExDtStorageHandler);
+    base->result = WAIT;
+    return 0;
 }
