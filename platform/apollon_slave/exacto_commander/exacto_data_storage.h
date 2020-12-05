@@ -33,9 +33,6 @@ typedef struct{
     struct mutex dtmutex;
 }exactodatastorage;
 extern exactodatastorage ExDtStorage;
-extern uint8_t appendDataToExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount);
-extern uint8_t getDataFromExactoDataStorage( const uint8_t id, uint8_t * data, const uint8_t datacount);
 extern uint8_t checkExactoDataStorage( thread_control_t * base );
-extern uint8_t addAppenderExactoDataStorage(void);
 extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
 #endif //EXACTO_DATA_STORAGE_H
