@@ -144,7 +144,7 @@ static int SPI2_FULL_DMA_init(void)
     // lthread_init(&SPI2_FULL_DMA_tx_buffer.dt_lth, &SPI2_FULL_DMA_tx_handler);
     // lthread_init(&SPI2_FULL_DMA_rx_buffer.dt_lth, &SPI2_FULL_DMA_rx_handler);
 
-    initThreadExactoDataStorage(&RxThread);
+    // initThreadExactoDataStorage(&RxThread);
     lthread_init(&RxThread.base_thread, &SPI2_FULL_DMA_rx_handler);
 
     LL_SPI_EnableDMAReq_RX(SPI2);

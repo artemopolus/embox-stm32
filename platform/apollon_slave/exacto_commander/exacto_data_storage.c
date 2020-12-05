@@ -37,7 +37,7 @@ static int functionForExDtStorageHandler(struct lthread *self)
     goto *lthread_resume(self, &&start);
 start:
      /* инициализация */
-    _trg_lthread = (thread_control_t*)&self;
+    _trg_lthread = (thread_control_t*)self;
 
 mutex_retry:
     // do       something
@@ -45,20 +45,20 @@ mutex_retry:
     {
         return lthread_yield(&&start, &&mutex_retry);
     }
-    //===============================================================
-    _trg_lthread->result = NO_RESULT;
-    if (mutex_trylock_lthread(self, &ExDtStorage.dtmutex ) == -EAGAIN)
-    {
-        return lthread_yield(&&start, &&mutex_retry);
-    }
+    // //===============================================================
+    // _trg_lthread->result = NO_RESULT;
+    // if (mutex_trylock_lthread(self, &ExDtStorage.dtmutex ) == -EAGAIN)
+    // {
+    //     return lthread_yield(&&start, &&mutex_retry);
+    // }
 
     if (!ExDtStorage.isEmpty) 
     {
         _trg_lthread->result = OK;
     }
 
-    mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
-    //===============================================================
+    // mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
+    // //===============================================================
     mutex_unlock_lthread(self, &_trg_lthread->mx);
 
     // after    something
@@ -105,7 +105,7 @@ uint8_t checkExactoDataStorage( thread_control_t * base)
 uint8_t initThreadExactoDataStorage( thread_control_t * base )
 {
     mutex_init_schedee(&base->mx);
-    lthread_init(&base->thread, &functionForExDtStorageHandler);
+    lthread_init(&base->thread, functionForExDtStorageHandler);
     base->result = WAIT;
     return 0;
 }
