@@ -24,25 +24,25 @@ start:
 
 mutex_retry:
     // do       something
-    if (mutex_trylock_lthread(self, &_trg_lthread->mx ) == -EAGAIN)
-    {
-        return lthread_yield(&&start, &&mutex_retry);
-    }
-    // //===============================================================
-    // _trg_lthread->result = NO_RESULT;
-    // if (mutex_trylock_lthread(self, &ExDtStorage.dtmutex ) == -EAGAIN)
+    // if (mutex_trylock_lthread(self, &_trg_lthread->mx ) == -EAGAIN)
     // {
     //     return lthread_yield(&&start, &&mutex_retry);
     // }
+    // //===============================================================
+    if (mutex_trylock_lthread(self, &ExDtStorage.dtmutex ) == -EAGAIN)
+    {
+        return lthread_yield(&&start, &&mutex_retry);
+    }
+    _trg_lthread->result = NO_RESULT;
 
     if (!ExDtStorage.isEmpty) 
     {
         _trg_lthread->result = OK;
     }
 
-    // mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
+    mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
     // //===============================================================
-    mutex_unlock_lthread(self, &_trg_lthread->mx);
+    // mutex_unlock_lthread(self, &_trg_lthread->mx);
 
     // after    something
     return 0;

@@ -20,7 +20,6 @@ typedef enum{
 }thread_control_result_t;
 // THREADS
 typedef struct {
-    struct lthread base_thread;
     struct lthread thread;                          // поток исполнения запросов
     struct mutex mx;                             // контрольный мьютекс для контроля окончания потока
     uint8_t databuffer[THREAD_CONTROL_BUFFER_SZ];   // буффер хранения данных

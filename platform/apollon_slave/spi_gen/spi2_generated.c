@@ -21,7 +21,6 @@
 #include <kernel/lthread/sync/mutex.h>
 #include "exacto_commander/exacto_data_storage.h"
 
-static thread_control_t RxThread;
 
 #define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 5
 typedef struct
@@ -145,7 +144,7 @@ static int SPI2_FULL_DMA_init(void)
     // lthread_init(&SPI2_FULL_DMA_rx_buffer.dt_lth, &SPI2_FULL_DMA_rx_handler);
 
     // initThreadExactoDataStorage(&RxThread);
-    lthread_init(&RxThread.base_thread, &SPI2_FULL_DMA_rx_handler);
+    lthread_init(&SPI2_FULL_DMA_rx_buffer.dt_lth, &SPI2_FULL_DMA_rx_handler);
 
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_SPI_EnableDMAReq_TX(SPI2);
