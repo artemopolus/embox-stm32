@@ -32,17 +32,20 @@ typedef struct
     uint8_t overflow;
     uint8_t buffer[SPI1_HALF_BUFFER_SIZE];
     uint8_t bufferlen;
+    spi_data_type_t type;
 } SPI1_HALF_buffer_t;
 
 static SPI1_HALF_buffer_t TxSPI1HalfBuffer = {
     .datalen = SPI1_HALF_BUFFER_SIZE,
     .datapt = 0,
     .overflow = 0,
+    .type = TRANSMIT,
 };
 static SPI1_HALF_buffer_t RxSPI1HalfBuffer = {
     .datalen = SPI1_HALF_BUFFER_SIZE,
     .datapt = 0,
     .overflow = 0,
+    .type = RECEIVE,
 };
 
 struct lthread RxSpi1HalfIrqThread;
@@ -90,6 +93,7 @@ static int SPI1_HALF_BASE_init(void)
     lthread_init(&TxSpi1HalfIrqThread, txSpi1HalfRun);
     lthread_init(&RxSpi1HalfIrqThread, rxSpi1HalfRun);
     lthread_init(&TxSpi1HalfRunThread, updateTxRun);
+    lthread_init(&TxSPI1HalfBuffer.thread, syncRxTsSpi1HalfRun);
     lthread_init(&RxSPI1HalfBuffer.thread, syncRxTsSpi1HalfRun);
     
 
@@ -186,6 +190,16 @@ mutex_retry:
     {
         return lthread_yield(&&start, &&mutex_retry);
     }
+    switch (_trg->type)
+    {
+    case TRANSMIT:
+        /* code */
+        break;
+    case RECEIVE:
+
+    default:
+        break;
+    }
     if (_trg->datapt != 0)
     {
         ExDtStorage.isEmpty = 0;
@@ -221,5 +235,10 @@ uint8_t sendSpi1Half(uint8_t * data, uint8_t datalen)
         TxSPI1HalfBuffer.buffer[i] = data[i];
     }
     lthread_launch(&TxSPI1HalfBuffer.thread);
+    return 0;
+}
+uint8_t getSpi1Half(spi_pack_t *data)
+{
+    lthread_launch(&RxSPI1HalfBuffer.thread);
     return 0;
 }
