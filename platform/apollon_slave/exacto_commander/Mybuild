@@ -13,3 +13,15 @@ module data_storage {
 	depends apollon_slave.project.defs
 	
 }
+module sensors {
+	source "exacto_sensors.c"
+	@IncludeExport(path="exacto_commander)
+	source "exacto_sensors.h"
+
+	depends apollon_slave.spi_gen.spi1
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends apollon_slave.project.defs
+	
+	depends third_party.bsp.stmf1cube.cube
+}
