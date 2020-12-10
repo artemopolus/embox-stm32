@@ -7,3 +7,5 @@
 
 #define THREAD_CONTROL_BUFFER_SZ 16
 #define THREAD_CONTROL_CNT 6
+
+#define SPI_PACK_SZ 16

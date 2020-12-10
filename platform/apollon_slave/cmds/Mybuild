@@ -32,6 +32,7 @@ module test_sensors {
 
 	depends apollon_slave.spi_gen.spi1
 	depends exacto_commander.data_storage
+	depends apollon_slave.project.defs
 	
 	depends third_party.bsp.stmf1cube.cube
 }

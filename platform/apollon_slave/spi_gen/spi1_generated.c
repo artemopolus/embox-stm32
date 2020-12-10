@@ -223,20 +223,28 @@ mutex_retry:
     switch (_trg->type)
     {
     case TRANSMIT:
-        if (_trg->result == OK)
+        if (_trg->buffer->type == CHECK)
         {
-            
-            for (uint8_t i = 0; i < _trg->buffer->datalen; i++)
-            {
-                _trg->data[i] = _trg->buffer->data[i];
-            }
-            _trg->result = WAITING;
-            _trg->buffer->result = OK;
+            _trg->buffer->result = _trg->result;
         }
         else
         {
-            _trg->buffer->result = DENY;
+            if (_trg->result == OK)
+            {
+
+                for (uint8_t i = 0; i < _trg->buffer->datalen; i++)
+                {
+                    _trg->data[i] = _trg->buffer->data[i];
+                }
+                _trg->result = WAITING;
+                _trg->buffer->result = OK;
+            }
+            else
+            {
+                _trg->buffer->result = DENY;
+            }
         }
+
         if (LL_SPI_GetTransferDirection(SPI1) == LL_SPI_HALF_DUPLEX_RX)
             LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
         LL_SPI_EnableIT_TXE(SPI1);
@@ -290,7 +298,6 @@ uint8_t sendSpi1Half(spi_pack_t * input)
 {
     if (input->datalen > SPI1_HALF_BUFFER_SIZE)
         return 1;
-    input->result = 0;
     TxSPI1HalfBuffer.buffer = input;
     lthread_launch(&TxSPI1HalfBuffer.thread);
     return 0;

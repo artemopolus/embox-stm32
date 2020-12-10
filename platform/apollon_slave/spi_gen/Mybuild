@@ -7,6 +7,7 @@ module spi1{
 	depends exacto_commander.data_storage
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
+	depends apollon_slave.project.defs
 }
 @BuildDepends(third_party.bsp.stmf1cube.cube)
 module spi2{
