@@ -19,7 +19,6 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
 #include "spi1_generated.h"
-#include "exacto_commander/exacto_data_storage.h"
 
 #define SPI1_HALF_BUFFER_SIZE 5
 typedef struct
@@ -30,9 +29,9 @@ typedef struct
     // struct mutex mutex;
     uint8_t datapt;
     uint8_t overflow;
-    uint8_t buffer[SPI1_HALF_BUFFER_SIZE];
-    uint8_t bufferlen;
     spi_data_type_t type;
+    spi_pack_t * buffer;
+    exacto_process_result_t result;
 } SPI1_HALF_buffer_t;
 
 static SPI1_HALF_buffer_t TxSPI1HalfBuffer = {
@@ -159,6 +158,7 @@ static int txSpi1HalfRun(struct lthread *self)
     }
     else
     {
+        TxSPI1HalfBuffer.result = OK;
         LL_SPI_DisableIT_TXE(SPI1);
         LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_RX);
         LL_SPI_EnableIT_RXNE(SPI1);
@@ -169,6 +169,8 @@ static int rxSpi1HalfRun(struct lthread *self)
 {
     if(RxSPI1HalfBuffer.datapt < RxSPI1HalfBuffer.datalen)
     {
+        if (RxSPI1HalfBuffer.result == WAITING)
+            RxSPI1HalfBuffer.result = OK;
         RxSPI1HalfBuffer.data[RxSPI1HalfBuffer.datapt++] = LL_SPI_ReceiveData8(SPI1);
     }
     else
@@ -176,6 +178,29 @@ static int rxSpi1HalfRun(struct lthread *self)
         //nothing
     }
     
+    return 0;
+}
+void initSpi1HalfBuffer(SPI1_HALF_buffer_t * buffer)
+{
+    buffer->datapt = 0;
+    if (buffer->type == TRANSMIT)
+        buffer->result = OK;
+    if (buffer->type == RECEIVE)
+        buffer->result = WAITING;
+    for (uint8_t i = 0; i < buffer->datalen; i++)
+    {
+        buffer->data[i] = 0;
+    }
+    
+}
+static int initRxBuffer(struct lthread *self)
+{
+   initSpi1HalfBuffer(&RxSPI1HalfBuffer);
+   return 0; 
+}
+static int initTxBuffer(struct lthread * self)
+{
+    initSpi1HalfBuffer(&TxSPI1HalfBuffer);
     return 0;
 }
 static int syncRxTsSpi1HalfRun(struct lthread * self)
@@ -190,13 +215,58 @@ mutex_retry:
     {
         return lthread_yield(&&start, &&mutex_retry);
     }
+    //disable interrupts for SPI
+    if (LL_SPI_IsEnabledIT_TXE(SPI1))
+        LL_SPI_DisableIT_TXE(SPI1);
+    if (LL_SPI_IsEnabledIT_RXNE(SPI1))
+        LL_SPI_DisableIT_RXNE(SPI1);
     switch (_trg->type)
     {
     case TRANSMIT:
-        /* code */
+        if (_trg->result == OK)
+        {
+            
+            for (uint8_t i = 0; i < _trg->buffer->datalen; i++)
+            {
+                _trg->data[i] = _trg->buffer->data[i];
+            }
+            _trg->result = WAITING;
+            _trg->buffer->result = OK;
+        }
+        else
+        {
+            _trg->buffer->result = DENY;
+        }
+        if (LL_SPI_GetTransferDirection(SPI1) == LL_SPI_HALF_DUPLEX_RX)
+            LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
+        LL_SPI_EnableIT_TXE(SPI1);
+
         break;
     case RECEIVE:
-
+        if (_trg->result == OK)
+        {
+            for (uint8_t i = 0; i < _trg->datapt; i++)
+            {
+                _trg->buffer->data[i] = _trg->data[i];
+            }
+            
+        }
+        else
+        {
+            _trg->buffer->result = _trg->result;
+        }
+        if (LL_SPI_GetTransferDirection(SPI1) == LL_SPI_HALF_DUPLEX_TX)
+        {
+            LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
+            LL_SPI_EnableIT_TXE(SPI1);
+        }
+        if (LL_SPI_GetTransferDirection(SPI1) == LL_SPI_HALF_DUPLEX_RX)
+        {
+            LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_RX);
+            LL_SPI_EnableIT_RXNE(SPI1);
+        }
+        
+        break;
     default:
         break;
     }
@@ -211,34 +281,25 @@ mutex_retry:
 }
 static int updateTxRun(struct lthread *self)
 {
-    if(LL_SPI_IsEnabledIT_TXE(SPI1))
-        LL_SPI_DisableIT_TXE(SPI1);
-    if(LL_SPI_IsEnabledIT_RXNE(SPI1))
-        LL_SPI_DisableIT_RXNE(SPI1);
-    TxSPI1HalfBuffer.datalen = TxSPI1HalfBuffer.bufferlen;
-    for (uint8_t i = 0; i < _trg->bufferlen; i++)
-    {
-        TxSPI1HalfBuffer.data[i] = TxSPI1HalfBuffer.buffer[i];
-    }
-    TxSPI1HalfBuffer.datapt = 0;
-    LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
-    LL_SPI_EnableIT_TXE(SPI1);
+
+    //copy data
+
     return 0;
 }
-uint8_t sendSpi1Half(uint8_t * data, uint8_t datalen)
+uint8_t sendSpi1Half(spi_pack_t * input)
 {
-    if (datalen > SPI1_HALF_BUFFER_SIZE)
+    if (input->datalen > SPI1_HALF_BUFFER_SIZE)
         return 1;
-    TxSPI1HalfBuffer.bufferlen = datalen;
-    for (uint8_t i = 0; i < datalen; i++)
-    {
-        TxSPI1HalfBuffer.buffer[i] = data[i];
-    }
+    input->result = 0;
+    TxSPI1HalfBuffer.buffer = input;
     lthread_launch(&TxSPI1HalfBuffer.thread);
     return 0;
 }
-uint8_t getSpi1Half(spi_pack_t *data)
+uint8_t waitSpi1Half(spi_pack_t *output)
 {
+    if (output-> datalen <= SPI1_HALF_BUFFER_SIZE)
+        return 1;
+    RxSPI1HalfBuffer.buffer = output;
     lthread_launch(&RxSPI1HalfBuffer.thread);
     return 0;
 }
