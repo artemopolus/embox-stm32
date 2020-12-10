@@ -31,6 +31,13 @@ typedef struct{
     uint8_t isEmpty;
     struct mutex dtmutex;
 }exactodatastorage;
+typedef enum{
+    OK = 0,
+    WAITING,
+    PROCESSING,
+    DENY,
+    ERROR
+}exacto_process_result_t;
 extern exactodatastorage ExDtStorage;
 extern uint8_t checkExactoDataStorage( thread_control_t * base );
 extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
