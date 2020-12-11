@@ -8,11 +8,10 @@
 #include "project/base_project_defs.h"
 #include "spi_gen/spi1_generated.h"
 
-static spi_pack_t PackageToSend
-{
+static spi_pack_t PackageToSend = {
     .result = OK,
 };
-static spi_pack_t PackageToGett{
+static spi_pack_t PackageToGett = {
     .result = WAITING,
 };
 typedef struct{
@@ -54,8 +53,8 @@ static int checkDataFromSend( struct lthread * self)
 }
 static int checkDataFromGet(struct lthread * self)
 {
-    thread_container_t * _trg;
-    _trg = (thread_container_t *)self;
+    // thread_container_t * _trg;
+    // _trg = (thread_container_t *)self;
     if (PackageToGett.result == OK)
     {
         Marker = 1;

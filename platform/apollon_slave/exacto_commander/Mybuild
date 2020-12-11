@@ -15,7 +15,7 @@ module data_storage {
 }
 module sensors {
 	source "exacto_sensors.c"
-	@IncludeExport(path="exacto_commander)
+	@IncludeExport(path="exacto_commander")
 	source "exacto_sensors.h"
 
 	depends apollon_slave.spi_gen.spi1

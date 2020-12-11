@@ -12,7 +12,7 @@ typedef enum{
     GET,
     CHECK
 }function_list_t;
-typedef enum{
+typedef enum t_c_r_t{
     OK = 0,
     WAIT,
     UNKNOWN_ERROR,
