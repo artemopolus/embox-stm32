@@ -33,11 +33,11 @@ mutex_retry:
     {
         return lthread_yield(&&start, &&mutex_retry);
     }
-    _trg_lthread->result = NO_RESULT;
+    _trg_lthread->result = THR_CTRL_NO_RESULT;
 
     if (!ExDtStorage.isEmpty) 
     {
-        _trg_lthread->result = OK;
+        _trg_lthread->result = THR_CTRL_OK;
     }
 
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
@@ -66,6 +66,6 @@ uint8_t initThreadExactoDataStorage( thread_control_t * base )
 {
     mutex_init_schedee(&base->mx);
     lthread_init(&base->thread, functionForExDtStorageHandler);
-    base->result = WAIT;
+    base->result = THR_CTRL_WAIT;
     return 0;
 }

@@ -49,12 +49,15 @@ static SPI1_HALF_buffer_t RxSPI1HalfBuffer = {
 
 struct lthread RxSpi1HalfIrqThread;
 struct lthread TxSpi1HalfIrqThread;
-struct lthread RxSpi1HalfRunThread;
-struct lthread TxSpi1HalfRunThread;
+struct lthread InitRxBufferThread;
+// struct lthread InitTxBufferThread;
 
 static irq_return_t Spi1HalfIrqHandler(unsigned int irq_nr, void *data);
 static int txSpi1HalfRun(struct lthread *self);
 static int rxSpi1HalfRun(struct lthread *self);
+static int syncRxTxSpi1HalfRun(struct lthread * self);
+static int initRxBuffer(struct lthread *self);
+// static int initTxBuffer(struct lthread * self);
 EMBOX_UNIT_INIT(SPI1_HALF_BASE_init);
 static int SPI1_HALF_BASE_init(void)
 {
@@ -91,10 +94,11 @@ static int SPI1_HALF_BASE_init(void)
 
     lthread_init(&TxSpi1HalfIrqThread, txSpi1HalfRun);
     lthread_init(&RxSpi1HalfIrqThread, rxSpi1HalfRun);
-    lthread_init(&TxSpi1HalfRunThread, updateTxRun);
-    lthread_init(&TxSPI1HalfBuffer.thread, syncRxTsSpi1HalfRun);
-    lthread_init(&RxSPI1HalfBuffer.thread, syncRxTsSpi1HalfRun);
-    
+    // lthread_init(&TxSpi1HalfRunThread, updateTxRun);
+    lthread_init(&TxSPI1HalfBuffer.thread, syncRxTxSpi1HalfRun);
+    lthread_init(&RxSPI1HalfBuffer.thread, syncRxTxSpi1HalfRun);
+    lthread_init(&InitRxBufferThread, initRxBuffer);
+    // lthread_init(&InitTxBufferThread, initTxBuffer);
 
 //   SPI1_IRQn                   = 35,     /*!< SPI1 global Interrupt    
 
@@ -198,12 +202,12 @@ static int initRxBuffer(struct lthread *self)
    initSpi1HalfBuffer(&RxSPI1HalfBuffer);
    return 0; 
 }
-static int initTxBuffer(struct lthread * self)
-{
-    initSpi1HalfBuffer(&TxSPI1HalfBuffer);
-    return 0;
-}
-static int syncRxTsSpi1HalfRun(struct lthread * self)
+// static int initTxBuffer(struct lthread * self)
+// {
+//     initSpi1HalfBuffer(&TxSPI1HalfBuffer);
+//     return 0;
+// }
+static int syncRxTxSpi1HalfRun(struct lthread * self)
 {
     SPI1_HALF_buffer_t * _trg;
     _trg = (SPI1_HALF_buffer_t * ) self;
@@ -237,7 +241,7 @@ mutex_retry:
                     _trg->data[i] = _trg->buffer->data[i];
                 }
                 _trg->result = EXACTO_WAITING;
-                _trg->buffer->result = OK;
+                _trg->buffer->result = EXACTO_OK;
             }
             else
             {
@@ -286,13 +290,6 @@ mutex_retry:
 
     return 0;
 
-}
-static int updateTxRun(struct lthread *self)
-{
-
-    //copy data
-
-    return 0;
 }
 uint8_t sendSpi1Half(spi_pack_t * input)
 {

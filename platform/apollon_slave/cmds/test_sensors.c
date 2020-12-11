@@ -9,10 +9,10 @@
 #include "spi_gen/spi1_generated.h"
 
 static spi_pack_t PackageToSend = {
-    .result = OK,
+    .result = EXACTO_OK,
 };
 static spi_pack_t PackageToGett = {
-    .result = WAITING,
+    .result = EXACTO_WAITING,
 };
 typedef struct{
     struct lthread thread;
@@ -34,7 +34,7 @@ static int appendDataToSend(struct lthread * self)
     {
         PackageToSend.data[i] = _trg->data[i];
     }
-    PackageToSend.result = WAITING;
+    PackageToSend.result = EXACTO_WAITING;
     PackageToSend.type = SPI_DT_TRANSMIT;
     sendSpi1Half(&PackageToSend);
     return  0;
@@ -42,7 +42,7 @@ static int appendDataToSend(struct lthread * self)
 static int checkDataFromSend( struct lthread * self)
 {
     PackageToSend.type = SPI_DT_CHECK;
-    if (PackageToSend.result == OK)
+    if (PackageToSend.result == EXACTO_OK)
     {
         Marker = 1;
     }
@@ -56,10 +56,11 @@ static int checkDataFromGet(struct lthread * self)
 {
     // thread_container_t * _trg;
     // _trg = (thread_container_t *)self;
-    if (PackageToGett.result == OK)
+    if (PackageToGett.result == EXACTO_OK)
     {
         Marker = 1;
     }
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -69,20 +70,20 @@ int main(int argc, char *argv[]) {
     const uint8_t lsm303ah_3wire_adr = 0x21;
     const uint8_t lsm303ah_3wire_val = 0x05;
     const uint8_t lsm303ah_whoami_xl_adr = 0x0f;
-    const uint8_t lsm303ah_whoami_xl_val = 0x43;
+    // const uint8_t lsm303ah_whoami_xl_val = 0x43;
 
-    const uint8_t lsm303ah_whoami_mg_adr = 0x4f;
-    const uint8_t lsm303ah_whoami_mg_val = 0x40;
+    // const uint8_t lsm303ah_whoami_mg_adr = 0x4f;
+    // const uint8_t lsm303ah_whoami_mg_val = 0x40;
 
-    //0x12, 0x0C
+    // //0x12, 0x0C
 
-    const uint8_t ism330dlc_3wire_adr = 0x12;
-    const uint8_t ism330dlc_3wire_val = 0x0C;
+    // const uint8_t ism330dlc_3wire_adr = 0x12;
+    // const uint8_t ism330dlc_3wire_val = 0x0C;
 
-    const uint8_t ism330dlc_whoami_adr = 0x0F;
-    const uint8_t ism330dlc_whoami_val = 0x6A;
+    // const uint8_t ism330dlc_whoami_adr = 0x0F;
+    // const uint8_t ism330dlc_whoami_val = 0x6A;
 
-    uint8_t data_mas[2] = {0};
+    // uint8_t data_mas[2] = {0};
     AppendDataToSendThread.data[0] = lsm303ah_3wire_adr & adr_mask;
     AppendDataToSendThread.data[1] = lsm303ah_3wire_val;
     AppendDataToSendThread.datalen = 2;

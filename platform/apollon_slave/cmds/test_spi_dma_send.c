@@ -20,7 +20,7 @@ static int printThreadRun(struct lthread * self)
 }
 static int checkMarkerThreadRun(struct lthread * self)
 {
-    if (MainThread.result == OK)
+    if (MainThread.result == THR_CTRL_OK)
     {
         MarkerThread = 1;
     }

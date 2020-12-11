@@ -11,8 +11,8 @@ module test_spi_dma_send {
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 	
-	depends embox.kernel.thread.core
-	depends embox.kernel.sched.sched
+	//depends embox.kernel.thread.core
+	//depends embox.kernel.sched.sched
 
 	depends exacto_commander.data_storage
 	
@@ -27,8 +27,8 @@ module test_sensors {
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 	
-	depends embox.kernel.thread.core
-	depends embox.kernel.sched.sched
+	//depends embox.kernel.thread.core
+	//depends embox.kernel.sched.sched
 
 	depends apollon_slave.spi_gen.spi1
 	depends exacto_commander.data_storage

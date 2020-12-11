@@ -12,12 +12,12 @@
 //     GET,
 //     CHECK
 // }function_list_t;
-// typedef enum t_c_r_t{
-//     OK = 0,
-//     WAIT,
-//     UNKNOWN_ERROR,
-//     NO_RESULT = 0xFF
-// }thread_control_result_t;
+typedef enum t_c_r_t{
+    THR_CTRL_OK = 0,
+    THR_CTRL_WAIT,
+    THR_CTRL_UNKNOWN_ERROR,
+    THR_CTRL_NO_RESULT = 0xFF
+}thread_control_result_t;
 // THREADS
 typedef struct {
     struct lthread thread;                          // поток исполнения запросов
@@ -25,7 +25,7 @@ typedef struct {
     uint8_t databuffer[THREAD_CONTROL_BUFFER_SZ];   // буффер хранения данных
     uint8_t datalen;
     thread_control_result_t result;
-    function_list_t fun_type;
+    // function_list_t fun_type;
 }thread_control_t;
 typedef struct{
     uint8_t isEmpty;
