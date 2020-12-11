@@ -5,6 +5,7 @@
   
 #include <stdint.h>
 #include "exacto_commander/exacto_data_storage.h"
+#include "exacto_commander/exacto_sensors.h"
 #include "project/base_project_defs.h"
 #include "spi_gen/spi1_generated.h"
 
@@ -93,6 +94,7 @@ int main(int argc, char *argv[]) {
     lthread_init(&CheckDataFromSendThread.thread, checkDataFromSend);
 
     printf("Start send data throw spi\n");
+    enableExactoSensor(LSM303AH);
 
     lthread_launch(&AppendDataToSendThread.thread);
 
@@ -101,10 +103,12 @@ int main(int argc, char *argv[]) {
         sleep(1);
         lthread_launch(&CheckDataFromSendThread.thread);
     }
+    disableExactoSensor(LSM303AH);
     printf("OPtions are sended!\n");
 
     AppendDataToSendThread.data[0] = lsm303ah_whoami_xl_adr & adr_mask;
     AppendDataToSendThread.datalen = 1;
+    enableExactoSensor(LSM303AH);
 
     lthread_launch(&AppendDataToSendThread.thread);
     Marker = 0;
@@ -114,6 +118,7 @@ int main(int argc, char *argv[]) {
         sleep(1);
         lthread_launch(&CheckDataFormGettThread.thread);
     }
+    disableExactoSensor(LSM303AH);
     printf("Get some data\n");
 
     return 0;

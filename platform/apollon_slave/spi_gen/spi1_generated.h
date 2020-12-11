@@ -6,7 +6,9 @@
 typedef enum{
     SPI_DT_TRANSMIT = 0,
     SPI_DT_RECEIVE,
-    SPI_DT_CHECK
+    SPI_DT_CHECK,
+    SPI_DT_TRANSMIT_RECEIVE,
+    SPI_DT_SET
 }spi_data_type_t;
 typedef struct{
     uint8_t data[SPI_PACK_SZ];
