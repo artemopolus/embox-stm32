@@ -92,6 +92,7 @@ int main(int argc, char *argv[]) {
     lthread_init(&CheckDataFormGettThread.thread, checkDataFromGet);
     lthread_init(&CheckDataFromSendThread.thread, checkDataFromSend);
 
+    printf("Start send data throw spi\n");
 
     lthread_launch(&AppendDataToSendThread.thread);
 
