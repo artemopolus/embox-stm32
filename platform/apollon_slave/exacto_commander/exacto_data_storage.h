@@ -7,17 +7,17 @@
 
 #include <stdint.h>
 #include "project/base_project_defs.h"
-typedef enum{
-    APPEND = 0,
-    GET,
-    CHECK
-}function_list_t;
-typedef enum t_c_r_t{
-    OK = 0,
-    WAIT,
-    UNKNOWN_ERROR,
-    NO_RESULT = 0xFF
-}thread_control_result_t;
+// typedef enum{
+//     APPEND = 0,
+//     GET,
+//     CHECK
+// }function_list_t;
+// typedef enum t_c_r_t{
+//     OK = 0,
+//     WAIT,
+//     UNKNOWN_ERROR,
+//     NO_RESULT = 0xFF
+// }thread_control_result_t;
 // THREADS
 typedef struct {
     struct lthread thread;                          // поток исполнения запросов
@@ -32,11 +32,11 @@ typedef struct{
     struct mutex dtmutex;
 }exactodatastorage;
 typedef enum{
-    OK = 0,
-    WAITING,
-    PROCESSING,
-    DENY,
-    ERROR
+    EXACTO_OK = 0,
+    EXACTO_WAITING,
+    EXACTO_PROCESSING,
+    EXACTO_DENY,
+    EXACTO_ERROR
 }exacto_process_result_t;
 extern exactodatastorage ExDtStorage;
 extern uint8_t checkExactoDataStorage( thread_control_t * base );

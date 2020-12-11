@@ -38,13 +38,13 @@ static SPI1_HALF_buffer_t TxSPI1HalfBuffer = {
     .datalen = SPI1_HALF_BUFFER_SIZE,
     .datapt = 0,
     .overflow = 0,
-    .type = TRANSMIT,
+    .type = SPI_DT_TRANSMIT,
 };
 static SPI1_HALF_buffer_t RxSPI1HalfBuffer = {
     .datalen = SPI1_HALF_BUFFER_SIZE,
     .datapt = 0,
     .overflow = 0,
-    .type = RECEIVE,
+    .type = SPI_DT_RECEIVE,
 };
 
 struct lthread RxSpi1HalfIrqThread;
@@ -158,7 +158,7 @@ static int txSpi1HalfRun(struct lthread *self)
     }
     else
     {
-        TxSPI1HalfBuffer.result = OK;
+        TxSPI1HalfBuffer.result = EXACTO_OK;
         LL_SPI_DisableIT_TXE(SPI1);
         LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_RX);
         LL_SPI_EnableIT_RXNE(SPI1);
@@ -169,8 +169,8 @@ static int rxSpi1HalfRun(struct lthread *self)
 {
     if(RxSPI1HalfBuffer.datapt < RxSPI1HalfBuffer.datalen)
     {
-        if (RxSPI1HalfBuffer.result == WAITING)
-            RxSPI1HalfBuffer.result = OK;
+        if (RxSPI1HalfBuffer.result == EXACTO_WAITING)
+            RxSPI1HalfBuffer.result = EXACTO_OK;
         RxSPI1HalfBuffer.data[RxSPI1HalfBuffer.datapt++] = LL_SPI_ReceiveData8(SPI1);
     }
     else
@@ -183,10 +183,10 @@ static int rxSpi1HalfRun(struct lthread *self)
 void initSpi1HalfBuffer(SPI1_HALF_buffer_t * buffer)
 {
     buffer->datapt = 0;
-    if (buffer->type == TRANSMIT)
-        buffer->result = OK;
-    if (buffer->type == RECEIVE)
-        buffer->result = WAITING;
+    if (buffer->type == SPI_DT_TRANSMIT)
+        buffer->result = EXACTO_OK;
+    if (buffer->type == SPI_DT_RECEIVE)
+        buffer->result = EXACTO_WAITING;
     for (uint8_t i = 0; i < buffer->datalen; i++)
     {
         buffer->data[i] = 0;
@@ -222,26 +222,26 @@ mutex_retry:
         LL_SPI_DisableIT_RXNE(SPI1);
     switch (_trg->type)
     {
-    case TRANSMIT:
-        if (_trg->buffer->type == CHECK)
+    case SPI_DT_TRANSMIT:
+        if (_trg->buffer->type == SPI_DT_CHECK)
         {
             _trg->buffer->result = _trg->result;
         }
         else
         {
-            if (_trg->result == OK)
+            if (_trg->result == EXACTO_OK)
             {
 
                 for (uint8_t i = 0; i < _trg->buffer->datalen; i++)
                 {
                     _trg->data[i] = _trg->buffer->data[i];
                 }
-                _trg->result = WAITING;
+                _trg->result = EXACTO_WAITING;
                 _trg->buffer->result = OK;
             }
             else
             {
-                _trg->buffer->result = DENY;
+                _trg->buffer->result = EXACTO_DENY;
             }
         }
 
@@ -250,8 +250,8 @@ mutex_retry:
         LL_SPI_EnableIT_TXE(SPI1);
 
         break;
-    case RECEIVE:
-        if (_trg->result == OK)
+    case SPI_DT_RECEIVE:
+        if (_trg->result == EXACTO_OK)
         {
             for (uint8_t i = 0; i < _trg->datapt; i++)
             {

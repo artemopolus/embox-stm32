@@ -4,9 +4,9 @@
 #include "exacto_commander/exacto_data_storage.h"
 #include "project/base_project_defs.h"
 typedef enum{
-    TRANSMIT = 0,
-    RECEIVE,
-    CHECK
+    SPI_DT_TRANSMIT = 0,
+    SPI_DT_RECEIVE,
+    SPI_DT_CHECK
 }spi_data_type_t;
 typedef struct{
     uint8_t data[SPI_PACK_SZ];

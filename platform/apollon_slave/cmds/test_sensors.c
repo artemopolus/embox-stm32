@@ -35,12 +35,13 @@ static int appendDataToSend(struct lthread * self)
         PackageToSend.data[i] = _trg->data[i];
     }
     PackageToSend.result = WAITING;
+    PackageToSend.type = SPI_DT_TRANSMIT;
     sendSpi1Half(&PackageToSend);
     return  0;
 }
 static int checkDataFromSend( struct lthread * self)
 {
-    PackageToSend.type = CHECK;
+    PackageToSend.type = SPI_DT_CHECK;
     if (PackageToSend.result == OK)
     {
         Marker = 1;
