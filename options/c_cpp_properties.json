@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/src/include/**",
+                "${workspaceFolder}/build/extbld/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/Drivers/STM32F1xx_HAL_Driver/Inc/**",
+                "${workspaceFolder}/build/extbld/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/Drivers/CMSIS/Device/ST/STM32F1xx/Include/**"
+            ],
+            "defines": ["STM32F103xB"],
+            "compilerPath": "/home/artem/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "gcc-arm"
+        }
+    ],
+    "version": 4
+}
