@@ -235,7 +235,7 @@ static int rxSpi1HalfRun(struct lthread *self)
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
     return 0;
 }
-void initSpi1HalfBuffer(SPI1_HALF_buffer_t * buffer)
+void initSpi1HalfBuffer(spi1_half_dma_buffer_t * buffer)
 {
     buffer->datapt = 0;
     if (buffer->type == SPI_DT_TRANSMIT)

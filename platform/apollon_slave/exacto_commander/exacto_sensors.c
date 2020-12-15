@@ -15,7 +15,7 @@
 #include "exacto_commander/exacto_sensors.h"
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(initSensor);
+EMBOX_UNIT_INIT(initSensors);
 static int initSensors(void)
 {
     LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_4, LL_GPIO_MODE_OUTPUT);

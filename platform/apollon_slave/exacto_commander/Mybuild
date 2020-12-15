@@ -13,6 +13,7 @@ module data_storage {
 	depends apollon_slave.project.defs
 	
 }
+@BuildDepends(third_party.bsp.stmf1cube.cube)
 module sensors {
 	source "exacto_sensors.c"
 	@IncludeExport(path="exacto_commander")
@@ -23,5 +24,4 @@ module sensors {
 	depends embox.kernel.lthread.sync.mutex
 	depends apollon_slave.project.defs
 	
-	depends third_party.bsp.stmf1cube.cube
 }
