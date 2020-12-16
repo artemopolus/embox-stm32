@@ -24,8 +24,24 @@ typedef struct{
 uint8_t Marker = 0;
 
 thread_container_t AppendDataToSendThread;
+thread_container_t AppendDataToSendAndReceiveThread;
 thread_container_t CheckDataFormGettThread;
 thread_container_t CheckDataFromSendThread;
+
+static int appendDataToSensAndReceive(struct lthread *self)
+{
+    thread_container_t * _trg;
+    _trg = (thread_container_t *) self;
+    for (uint8_t i = 0; i < _trg->datalen; i++)
+    {
+        PackageToSend.data[i] = _trg->data[i];
+    }
+    PackageToSend.result = EXACTO_WAITING;
+    PackageToSend.type = SPI_DT_TRANSMIT_RECEIVE;
+    sendSpi1Half(&PackageToSend);
+
+    return 0;
+}
 
 static int appendDataToSend(struct lthread * self)
 {
@@ -93,6 +109,7 @@ int main(int argc, char *argv[]) {
     lthread_init(&AppendDataToSendThread.thread, appendDataToSend);
     lthread_init(&CheckDataFormGettThread.thread, checkDataFromGet);
     lthread_init(&CheckDataFromSendThread.thread, checkDataFromSend);
+    lthread_init(&AppendDataToSendAndReceiveThread.thread, appendDataToSensAndReceive);
 
     printf("Start send data throw spi\n");
     enableExactoSensor(LSM303AH);
@@ -111,7 +128,7 @@ int main(int argc, char *argv[]) {
     AppendDataToSendThread.datalen = 1;
     // enableExactoSensor(LSM303AH);
 
-    lthread_launch(&AppendDataToSendThread.thread);
+    lthread_launch(&AppendDataToSendAndReceiveThread.thread);
     Marker = 0;
     while(!Marker)
     {
