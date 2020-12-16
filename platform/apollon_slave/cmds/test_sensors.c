@@ -88,6 +88,7 @@ int main(int argc, char *argv[]) {
     AppendDataToSendThread.data[0] = lsm303ah_3wire_adr & adr_mask;
     AppendDataToSendThread.data[1] = lsm303ah_3wire_val;
     AppendDataToSendThread.datalen = 2;
+    
 
     lthread_init(&AppendDataToSendThread.thread, appendDataToSend);
     lthread_init(&CheckDataFormGettThread.thread, checkDataFromGet);
@@ -103,16 +104,22 @@ int main(int argc, char *argv[]) {
         sleep(1);
         lthread_launch(&CheckDataFromSendThread.thread);
     }
-    disableExactoSensor(LSM303AH);
-    printf("OPtions are sended!\n");
+    // disableExactoSensor(LSM303AH);
+    printf("Options are sended!\n");
 
-    AppendDataToSendThread.data[0] = lsm303ah_whoami_xl_adr & adr_mask;
+    AppendDataToSendThread.data[0] = lsm303ah_whoami_xl_adr | 0x80;
     AppendDataToSendThread.datalen = 1;
-    enableExactoSensor(LSM303AH);
+    // enableExactoSensor(LSM303AH);
 
     lthread_launch(&AppendDataToSendThread.thread);
     Marker = 0;
-
+    while(!Marker)
+    {
+        sleep(1);
+        lthread_launch(&CheckDataFromSendThread.thread);
+    }
+    printf("Wait whoami data!\n");
+    Marker = 0;
     while(!Marker)
     {
         sleep(1);

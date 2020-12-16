@@ -39,12 +39,14 @@ static spi1_half_dma_buffer_t TxSPI1HalfBuffer = {
     .datapt = 0,
     .overflow = 0,
     .type = SPI_DT_TRANSMIT,
+    .result = EXACTO_OK,
 };
 static spi1_half_dma_buffer_t RxSPI1HalfBuffer = {
-    .datalen = SPI1_HALF_BUFFER_SIZE,
+    .datalen = 1, //SPI1_HALF_BUFFER_SIZE,
     .datapt = 0,
     .overflow = 0,
     .type = SPI_DT_RECEIVE,
+    .result = EXACTO_WAITING,
 };
 
 struct lthread RxSpi1HalfIrqThread;
@@ -122,7 +124,7 @@ static int initSpi1HalfDMA(void)
     SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
     SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
     SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV4;
+    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
     SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
     SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
     SPI_InitStruct.CRCPoly = 10;
