@@ -72,6 +72,7 @@ static int initSpi1HalfDMA(void)
 
     /* Peripheral clock enable */
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SPI1);
+    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
 
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOA);
     /**SPI1 GPIO Configuration
@@ -124,7 +125,7 @@ static int initSpi1HalfDMA(void)
     SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
     SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
     SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
+    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV16;
     SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
     SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
     SPI_InitStruct.CRCPoly = 10;
@@ -165,8 +166,8 @@ static int initSpi1HalfDMA(void)
     //enable spi and set transfer direction
     LL_SPI_EnableDMAReq_RX(SPI1);
     LL_SPI_EnableDMAReq_TX(SPI1);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3);
-    LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
+  //  LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3);
+  //  LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
     LL_SPI_Enable(SPI1);
     return 0;
 }
@@ -235,6 +236,7 @@ static int rxSpi1HalfRun(struct lthread *self)
 {
     RxSPI1HalfBuffer.result = EXACTO_OK;
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+    LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
     return 0;
 }
 void initSpi1HalfBuffer(spi1_half_dma_buffer_t * buffer)
@@ -305,14 +307,15 @@ void data2transmitDMA(spi1_half_dma_buffer_t *input)
         LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
     if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_2))
         LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-    LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
     for (uint8_t i = 0; i < input->buffer->datalen; i++)
     {
         input->data[i] = input->buffer->data[i];
     }
     input->datalen = input->buffer->datalen;
+    input->result = EXACTO_WAITING;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_3, input->datalen);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
+    LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
 }
 void transmitDataHandler(spi1_half_dma_buffer_t * input)
 {
@@ -389,8 +392,8 @@ uint8_t sendSpi1Half(spi_pack_t * input)
 }
 uint8_t waitSpi1Half(spi_pack_t *output)
 {
-    if (output-> datalen <= SPI1_HALF_BUFFER_SIZE)
-        return 1;
+    // if (output-> datalen <= SPI1_HALF_BUFFER_SIZE)
+        // return 1;
     RxSPI1HalfBuffer.buffer = output;
     lthread_launch(&RxSPI1HalfBuffer.thread);
     return 0;

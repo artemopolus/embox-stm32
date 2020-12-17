@@ -19,6 +19,7 @@ EMBOX_UNIT_INIT(initSensors);
 static int initSensors(void)
 {
     LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_4, LL_GPIO_MODE_OUTPUT);
+    LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_4);
     return 0;
 }
 

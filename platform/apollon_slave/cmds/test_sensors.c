@@ -36,6 +36,7 @@ static int appendDataToSensAndReceive(struct lthread *self)
     {
         PackageToSend.data[i] = _trg->data[i];
     }
+    PackageToSend.datalen = _trg->datalen;
     PackageToSend.result = EXACTO_WAITING;
     PackageToSend.type = SPI_DT_TRANSMIT_RECEIVE;
     sendSpi1Half(&PackageToSend);
@@ -51,6 +52,7 @@ static int appendDataToSend(struct lthread * self)
     {
         PackageToSend.data[i] = _trg->data[i];
     }
+    PackageToSend.datalen = _trg->datalen;
     PackageToSend.result = EXACTO_WAITING;
     PackageToSend.type = SPI_DT_TRANSMIT;
     sendSpi1Half(&PackageToSend);
@@ -71,11 +73,16 @@ static int checkDataFromSend( struct lthread * self)
 }
 static int checkDataFromGet(struct lthread * self)
 {
-    // thread_container_t * _trg;
-    // _trg = (thread_container_t *)self;
+    thread_container_t * _trg;
+    _trg = (thread_container_t *)self;
+    PackageToGett.type = SPI_DT_RECEIVE;
+    PackageToGett.datalen = _trg->datalen;
     if (PackageToGett.result == EXACTO_OK)
     {
         Marker = 1;
+    }
+    else{
+        waitSpi1Half(&PackageToGett);
     }
     return 0;
 }
@@ -113,37 +120,41 @@ int main(int argc, char *argv[]) {
 
     printf("Start send data throw spi\n");
     enableExactoSensor(LSM303AH);
+    sleep(1);
 
     lthread_launch(&AppendDataToSendThread.thread);
 
     while(!Marker)
     {
-        sleep(1);
+        // sleep(1);
         lthread_launch(&CheckDataFromSendThread.thread);
     }
-    // disableExactoSensor(LSM303AH);
+    disableExactoSensor(LSM303AH);
     printf("Options are sended!\n");
 
-    AppendDataToSendThread.data[0] = lsm303ah_whoami_xl_adr | 0x80;
-    AppendDataToSendThread.datalen = 1;
-    // enableExactoSensor(LSM303AH);
+    AppendDataToSendAndReceiveThread.data[0] = lsm303ah_whoami_xl_adr | 0x80;
+    AppendDataToSendAndReceiveThread.datalen = 1;
+    enableExactoSensor(LSM303AH);
 
     lthread_launch(&AppendDataToSendAndReceiveThread.thread);
     Marker = 0;
     while(!Marker)
     {
-        sleep(1);
+        // sleep(1);
         lthread_launch(&CheckDataFromSendThread.thread);
     }
     printf("Wait whoami data!\n");
+    CheckDataFormGettThread.datalen = 1;
     Marker = 0;
     while(!Marker)
     {
-        sleep(1);
+        // sleep(1);
         lthread_launch(&CheckDataFormGettThread.thread);
     }
     disableExactoSensor(LSM303AH);
-    printf("Get some data\n");
+    uint8_t ctrl_value = 0;
+    ctrl_value = PackageToGett.data[0];
+    printf("Get some data [ %#04x = %d ]\n",ctrl_value, ctrl_value);
 
     return 0;
 }
