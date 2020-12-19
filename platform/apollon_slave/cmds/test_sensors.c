@@ -101,12 +101,13 @@ static int checkDataFromGet(struct lthread * self)
     return 0;
 }
 
-void sendAndReceive( const uint8_t address)
+void sendAndReceive(exacto_sensors_list_t sns, const uint8_t address)
 {
     AppendDataToSendAndReceiveThread.data[0] = address | 0x80;
     AppendDataToSendAndReceiveThread.datalen = 1;
+    enableExactoSensor(sns);
     lthread_launch(&AppendDataToSendAndReceiveThread.thread);
-    CheckDataFormGettThread.datalen = 1;
+    CheckDataFormGettThread.datalen = 3;
     Marker = 0;
     while(!Marker)
     {
@@ -123,17 +124,39 @@ void sendAndReceive( const uint8_t address)
         if (counter > 1000)
         {
             printf("Failed\n");
-            break;
+            return;
         }
     }
-    uint8_t ctrl_value = PackageToGett.data[0];
-    printf("Get some data [ %#04x = %d ]\n",ctrl_value, ctrl_value);
+    disableExactoSensor(sns);
+    printf("Get some data: ");
+    for (uint8_t i = 0; i < PackageToGett.datalen; i++)
+    {
+        uint8_t ctrl_value = PackageToGett.data[i];
+        printf("[ %#04x = %d ]\t", ctrl_value, ctrl_value);
+    }
+    printf("\n");
+    
 
 }
+void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value)
+{
+    AppendDataToSendThread.data[0] = address & 0x7F;
+    AppendDataToSendThread.data[1] = value;
+    AppendDataToSendThread.datalen = 2;
 
+    enableExactoSensor(sns);
+    lthread_launch(&AppendDataToSendThread.thread);
+    Marker = 0;
+    while(!Marker)
+    {
+        lthread_launch(&CheckDataFromSendThread.thread);
+    }
+    disableExactoSensor(sns);
+ 
+}
 int main(int argc, char *argv[]) {
 
-    const uint8_t adr_mask = 0x7F;
+    // const uint8_t adr_mask = 0x7F;
 
     const uint8_t lsm303ah_3wire_adr = 0x21;
     const uint8_t lsm303ah_3wire_val = 0x05;
@@ -145,16 +168,13 @@ int main(int argc, char *argv[]) {
 
     // //0x12, 0x0C
 
-    // const uint8_t ism330dlc_3wire_adr = 0x12;
-    // const uint8_t ism330dlc_3wire_val = 0x0C;
+    const uint8_t ism330dlc_3wire_adr = 0x12;
+    const uint8_t ism330dlc_3wire_val = 0x0C;
 
-    // const uint8_t ism330dlc_whoami_adr = 0x0F;
+    const uint8_t ism330dlc_whoami_adr = 0x0F;
     // const uint8_t ism330dlc_whoami_val = 0x6A;
 
     // uint8_t data_mas[2] = {0};
-    AppendDataToSendThread.data[0] = lsm303ah_3wire_adr & adr_mask;
-    AppendDataToSendThread.data[1] = lsm303ah_3wire_val;
-    AppendDataToSendThread.datalen = 2;
     
     lthread_init(&SetPackageToGettToNullThread, setPackageToGettToNull);
 
@@ -164,50 +184,42 @@ int main(int argc, char *argv[]) {
     lthread_init(&AppendDataToSendAndReceiveThread.thread, appendDataToSensAndReceive);
 
     printf("Start send data throw spi\n");
-    enableExactoSensor(LSM303AH);
     sleep(1);
-
-    lthread_launch(&AppendDataToSendThread.thread);
-
-    while(!Marker)
-    {
-        // sleep(1);
-        lthread_launch(&CheckDataFromSendThread.thread);
-    }
-    disableExactoSensor(LSM303AH);
+    sendOptions(LSM303AH, lsm303ah_3wire_adr, lsm303ah_3wire_val);
     printf("Options are sended!\n");
     printf("Wait whoami xl value\n");
     sleep(1);
-   //check  xl data 
-    enableExactoSensor(LSM303AH);
-    sendAndReceive(lsm303ah_whoami_xl_adr);
-    disableExactoSensor(LSM303AH);
+    //check  xl data
+    for (uint8_t i = 0; i < 9; i++)
+    {
+        sendAndReceive(LSM303AH, lsm303ah_whoami_xl_adr);
+    }
 
     printf("Check whoami lsm303 mg value\n");
     sleep(1);
-   //check mg data 
-    enableExactoSensor(LSM303AH);
-    sendAndReceive(lsm303ah_whoami_mg_adr);
-    disableExactoSensor(LSM303AH);
-    
+    //check mg data
+    for (uint8_t i = 0; i < 9; i++)
+    {
+        sendAndReceive(LSM303AH, lsm303ah_whoami_mg_adr);
+    }
+    sleep(1);
+    printf("Check whoami lsm303 xl and mg value\n");
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        sendAndReceive(LSM303AH, lsm303ah_whoami_xl_adr);
+        sendAndReceive(LSM303AH, lsm303ah_whoami_mg_adr);
+    }
     //set option for second sensor
-    // printf("Setup ism330 sensor\n");
-    // AppendDataToSendThread.data[0] = ism330dlc_3wire_adr & adr_mask;
-    // AppendDataToSendThread.data[1] = ism330dlc_3wire_val;
-    // AppendDataToSendThread.datalen = 2;
-    // enableExactoSensor(ISM330DLC);
-    // lthread_launch(&AppendDataToSendThread.thread);
-    // while(!Marker)
-    // {
-    //     lthread_launch(&CheckDataFromSendThread.thread);
-    // }
-    // disableExactoSensor(ISM330DLC);
-    // printf("Options are setted\n");
+    printf("Setup ism330 sensor\n");
+    sendOptions(ISM330DLC, ism330dlc_3wire_adr, ism330dlc_3wire_val);
+    printf("Check whoami lsm303 mg value\n");
+    for (uint8_t i = 0; i < 9; i++)
+    {
+        sendAndReceive(ISM330DLC, ism330dlc_whoami_adr);
+    }
 
-    // printf("Get whoami ism330 value\n");
-    // enableExactoSensor(ISM330DLC);
-    // sendAndReceive(ism330dlc_whoami_adr);
-    // disableExactoSensor(ISM330DLC);
+    printf("Done\n");
+
 
     return 0;
 }

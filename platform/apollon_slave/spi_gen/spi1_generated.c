@@ -42,7 +42,7 @@ static spi1_half_dma_buffer_t TxSPI1HalfBuffer = {
     .result = EXACTO_OK,
 };
 static spi1_half_dma_buffer_t RxSPI1HalfBuffer = {
-    .datalen = 1, //SPI1_HALF_BUFFER_SIZE,
+    .datalen = 3, //SPI1_HALF_BUFFER_SIZE,
     .datapt = 0,
     .overflow = 0,
     .type = SPI_DT_RECEIVE,
@@ -125,7 +125,7 @@ static int initSpi1HalfDMA(void)
     SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
     SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
     SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV16;
+    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
     SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
     SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
     SPI_InitStruct.CRCPoly = 10;
@@ -224,9 +224,9 @@ uint8_t SPI1_HALF_BASE_set_option(const uint8_t address, const uint8_t value)
 static int txSpi1HalfRun(struct lthread *self)
 {
     TxSPI1HalfBuffer.result = EXACTO_OK;
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
     if (TxSPI1HalfBuffer.type == SPI_DT_TRANSMIT_RECEIVE)
     {
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
         LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_RX);
         LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, RxSPI1HalfBuffer.datalen);
         LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2); // receive
@@ -237,8 +237,10 @@ static int rxSpi1HalfRun(struct lthread *self)
 {
     RxSPI1HalfBuffer.result = EXACTO_OK;
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+        // LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, RxSPI1HalfBuffer.datalen);
+        // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2); // receive
     LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); // receive
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit 
     return 0;
 }
 void initSpi1HalfBuffer(spi1_half_dma_buffer_t * buffer)
@@ -266,25 +268,27 @@ static int initTxBuffer(struct lthread * self)
 }
 void set2receiveDMA(spi1_half_dma_buffer_t *output)
 {
-    // uint8_t tr = 0, rc = 0;
-    // if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_3)) //transmit
-    // {
-    //     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
-    //     tr = 1;
-    // }
-    // if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_2))//receive
-    // {
-    //     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-    //     rc = 1;
-    // }
+    // uint8_t tr = 0;
+    uint8_t rc = 0;
+
     //----------------------------------
     switch (output->buffer->type)
     {
     case SPI_DT_RECEIVE:
         if (RxSPI1HalfBuffer.result == EXACTO_OK)
         {
-        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-            for (uint8_t i = 0; i < output->buffer->datalen; i++)
+            // if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_3)) //transmit
+            // {
+            //     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
+            //     tr = 1;
+            // }
+            if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_2)) //receive
+            {
+                LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+                rc = 1;
+            }
+            // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+            for (uint8_t i = 0; i < output->datalen; i++)
             {
                 output->buffer->data[i] = output->data[i];
             }
@@ -294,17 +298,21 @@ void set2receiveDMA(spi1_half_dma_buffer_t *output)
             {
                 output->data[i] = 0;
             }
-        LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2); 
+            // if (tr)
+            //     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
+            if (rc)
+                LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2);
+            // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2);
         }
         else
         {
             output->buffer->result = output->result;
         }
-        
+
         break;
     case SPI_DT_SET:
         output->datalen = output->buffer->datalen;
-        LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, output->datalen);
+        //LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, output->datalen);
         output->buffer->result = EXACTO_OK;
         break;
     
@@ -312,10 +320,6 @@ void set2receiveDMA(spi1_half_dma_buffer_t *output)
         break;
     }
     //----------------------------------
-    // if(tr)
-    //     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
-    // if(rc)
-    //     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2); 
 
 }
 void data2transmitDMA(spi1_half_dma_buffer_t *input)
