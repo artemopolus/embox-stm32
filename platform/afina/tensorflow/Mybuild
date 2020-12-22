@@ -1,7 +1,10 @@
 package afina.tf_module
 
-@BuildDepends(third_party.tensorflow.start)
-module base{
+@AutoCmd
+@Cmd(name="tensorflow", help = "")
+@BuildDepends(third_party.tensorflow.tf)
+module init{
+    source "CNN_model_tfmodel.c"
 	@IncludeExport(path="tensorflow")
     source "CNN_model_tfmodel.h"
 
